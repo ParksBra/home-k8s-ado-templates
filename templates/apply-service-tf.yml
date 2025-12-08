@@ -1,0 +1,140 @@
+parameters:
+  - name: kubeconfigArtifactName
+    type: string
+    default: kubeconfigFile
+
+  - name: kubeconfigArtifactSource
+    type: string
+    default: clusterBase
+
+  - name: terraformServiceRepository
+    type: string
+    default: terraformServiceK8sdash
+
+  - name: terraformServiceRepositoryTerraformPath
+    type: string
+    default: terraform
+
+  - name: terraformServiceName
+    type: string
+    default: k8sdash
+
+  - name: terraformDestroy
+    type: boolean
+    default: false
+
+  - name: terraformApply
+    type: boolean
+    default: true
+
+  - name: terraformBackendNamespace
+    type: string
+    default: kube-system
+
+  - name: terraformVariableLibraryName
+    type: string
+    default: home-k8s-cluster
+
+  - name: terraformCloudflareApiTokenSecretName
+    type: string
+    default: home-k8s-terraform-provider-cloudflare-api-token
+
+jobs:
+  - job: "terraformApply"
+    displayName: "Run Terraform Apply for Service '${{ parameters.terraformServiceName }}'"
+    variables:
+      - name: terraformBackendSuffix
+        value: "service-${{ parameters.terraformServiceName }}"
+    steps:
+      - download: ${{ parameters.kubeconfigArtifactSource }}
+        displayName: 'Download Kubeconfig File Artifact'
+        artifact: ${{ parameters.kubeconfigArtifactName }}
+
+      - checkout: ${{ parameters.terraformServiceRepository }}
+        displayName: 'Checkout Service ${{ parameters.terraformServiceName }} Repository'
+        path: "${{ parameters.terraformServiceName }}"
+        sparseCheckoutDirectories: "${{ parameters.terraformServiceRepositoryTerraformPath }}"
+
+      - task: TerraformInstaller@1
+        name: "installTerraform"
+        displayName: 'Install Terraform'
+        inputs:
+          terraformVersion: 'latest'
+
+      - task: Bash@3
+        name: "runTerraformPlan"
+        displayName: "Terraform Plan"
+        condition: eq('${{ parameters.terraformDestroy }}', 'false')
+        env:
+          TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/terraform/.terraform"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+          TF_VAR_azuredevops_library_name: "${{ parameters.terraformVariableLibraryName }}"
+          TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
+          CLOUDFLARE_API_TOKEN: $(${{ parameters.terraformCloudflareApiTokenSecretName }})
+          KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSource }}/${{ parameters.kubeconfigArtifactName }}/kubeconfig"
+          AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+          AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Run Terraform Init"
+                cd $(System.DefaultWorkingDirectory)/terraform
+                terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=$(terraformBackendSuffix)'
+            echo "##[endgroup]"
+            echo "##[group]Run Terraform Plan"
+                terraform plan -no-color -out=tfplan
+            echo "##[endgroup]"
+          failOnStderr: true
+
+      - task: Bash@3
+        name: "runTerraformPlanDestroy"
+        displayName: "Terraform Plan for Destroy"
+        condition: eq('${{ parameters.terraformDestroy }}', 'true')
+        env:
+          TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/terraform/.terraform"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+          TF_VAR_azuredevops_library_name: "${{ parameters.terraformVariableLibraryName }}"
+          TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
+          CLOUDFLARE_API_TOKEN: $(${{ parameters.terraformCloudflareApiTokenSecretName }})
+          KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSource }}/${{ parameters.kubeconfigArtifactName }}/kubeconfig"
+          AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+          AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Run Terraform Init"
+                cd $(System.DefaultWorkingDirectory)/terraform
+                terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=$(terraformBackendSuffix)'
+            echo "##[endgroup]"
+            echo "##[group]Run Terraform Plan for Destroy"
+                terraform plan -no-color -destroy -out=tfplan
+            echo "##[endgroup]"
+          failOnStderr: true
+
+      - task: Bash@3
+        name: "runTerraformApply"
+        displayName: "Terraform Apply"
+        condition: eq('${{ parameters.terraformApply }}', 'true')
+        env:
+          TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/terraform/.terraform)"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+          TF_VAR_azuredevops_library_name: "${{ parameters.terraformVariableLibraryName }}"
+          TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
+          CLOUDFLARE_API_TOKEN: $({{ parameters.terraformCloudflareApiTokenSecretName }})
+          KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSource }}/${{ parameters.kubeconfigArtifactName }}/kubeconfig"
+          AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+          AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Run Terraform Apply"
+                cd $(System.DefaultWorkingDirectory)/terraform
+                terraform apply -no-color -auto-approve tfplan
+            echo "##[endgroup]"
+          failOnStderr: true
