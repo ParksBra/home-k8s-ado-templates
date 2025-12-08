@@ -1,4 +1,8 @@
 parameters:
+  - name: jobReference
+    type: string
+    default: "applyAnsiblePlaybooks"
+
   - name: pythonVenvPath
     type: string
     default: "$(System.DefaultWorkingDirectory)/.venv"
@@ -51,7 +55,7 @@ parameters:
         value: ""
 
 jobs:
-  - job: "applyAnsiblePlaybooks"
+  - job: "${{ parameters.jobReference }}"
     displayName: "Apply Ansible Playbook(s)"
     steps:
       - template: _templates/self_checkout.yml

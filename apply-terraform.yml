@@ -1,4 +1,8 @@
 parameters:
+  - name: jobReference
+    type: string
+    default: "applyAnsiblePlaybooks"
+
   - name: kubeconfigArtifactName
     type: string
     default: kubeconfigFile
@@ -42,7 +46,7 @@ parameters:
     default: latest
 
 jobs:
-  - job: "applyTerraform"
+  - job: "${{ parameters.jobReference }}"
     displayName: "Apply Terraform"
     steps:
       - template: _templates/self_checkout.yml
