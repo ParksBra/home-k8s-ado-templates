@@ -114,7 +114,7 @@ jobs:
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
-          name: "ansiblePlaybook${{ replace(join('_',split(playbook, '.')[:-1]), '/', '_') }}"
+          name: "ansiblePlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
           displayName: "Run Ansible Playbook: ${{ playbook }}"
           env:
             ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
