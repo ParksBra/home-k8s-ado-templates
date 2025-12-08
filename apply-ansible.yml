@@ -130,7 +130,7 @@ jobs:
           inputs:
             targetType: "inline"
             script: |
-              chmod 600 ${{ sshConfig.group }}Key.secureFilePath
+              chmod 600 $( ${{ sshConfig.group }}Key.secureFilePath )
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
