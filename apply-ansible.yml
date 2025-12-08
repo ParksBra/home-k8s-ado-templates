@@ -77,7 +77,7 @@ jobs:
         name: "cacheVenv"
         displayName: "Cache Python venv"
         inputs:
-          key: 'venv${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}'
+          key: 'venv${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(Pipeline.Workspace)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}'
           path: ${{ parameters.pythonVenvPath }}
           cacheHitVar: cacheRestored
 
@@ -89,11 +89,11 @@ jobs:
           targetType: "inline"
           script: |
             echo "##[group]Install pip requirements"
-                ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade -r $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}
+                ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade -r $(Pipeline.Workspace)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}
                 ${{ parameters.pythonVenvPath }}/bin/pip install ansible
             echo "##[endgroup]"
             echo "##[group]Install ansible-galaxy collections"
-                ${{ parameters.pythonVenvPath }}/bin/ansible-galaxy collection install --force -r $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.ansibleRequirementsFileRelativePath }}
+                ${{ parameters.pythonVenvPath }}/bin/ansible-galaxy collection install --force -r $(Pipeline.Workspace)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.ansibleRequirementsFileRelativePath }}
             echo "##[endgroup]"
           failOnStderr: true
 
@@ -128,7 +128,7 @@ jobs:
             targetType: "inline"
             script: |
               echo "##[group]Run Ansible Playbook: ${{ playbook }}"
-                  cd $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryAnsiblePath }}
-                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
+                  cd $(Pipeline.Workspace)/${{ parameters.ansibleRepositoryAnsiblePath }}
+                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
               echo "##[endgroup]"
             failOnStderr: true
