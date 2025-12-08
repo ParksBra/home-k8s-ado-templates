@@ -127,10 +127,12 @@ jobs:
         - task: Bash@3
           name: ${{ sshConfig.group }}KeyPermissions
           displayName: 'Set Permissions for ${{ sshConfig.group }} SSH Key'
+          variables:
+            sshKeyPath: "$( ${{ sshConfig.group }}Key.secureFilePath )"
           inputs:
             targetType: "inline"
             script: |
-              chmod 600 $( ${{ sshConfig.group }}Key.secureFilePath )
+              chmod 600 $(sshKeyPath)
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
