@@ -46,7 +46,9 @@ parameters:
 
   - name: ansiblePlaybookExtraEnvironmentVariables
     type: object
-    default: {}
+    default:
+      - name: ""
+        value: ""
 
 jobs:
   - job: "setupAnsible"
@@ -120,8 +122,8 @@ jobs:
             ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
               ${{ upper(sshConfig.group) }}_SSH_KEY_PATH: $( ${{ sshConfig.group }}Key.secureFilePath )
               ${{ upper(sshConfig.group) }}_SSH_USER: ${{ sshConfig.user }}
-            ${{ each varName, varValue in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
-              ${{ varName }}: ${{ varValue }}
+            ${{ each envVar in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
+              ${{ envVar.name }}: ${{ envVar.value }}
           inputs:
             targetType: "inline"
             script: |
