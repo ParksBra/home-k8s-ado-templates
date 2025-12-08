@@ -1,7 +1,11 @@
 parameters:
+  - name: kubeconfigArtifactFileName
+    type: string
+    default: kubeconfig
+
   - name: kubeconfigArtifactName
     type: string
-    default: kubeconfigFile
+    default: kubeConfig
 
   - name: kubeconfigArtifactSourcePipeline
     type: string
@@ -76,7 +80,7 @@ steps:
       script: |
         echo "##[group]Run Terraform Init for Validation"
             cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
-            terraform init -no-color -upgrade -reconfigure -backend=false'
+            terraform init -no-color -upgrade -reconfigure -backend=false
         echo "##[endgroup]"
         echo "##[group]Run Terraform Validate"
             terraform validate -no-color
@@ -92,7 +96,7 @@ steps:
       TF_IN_AUTOMATION: "1"
       TF_INPUT: "0"
       KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
-      KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
+      KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}/${{ parameters.kubeconfigArtifactFileName }}"
       ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
         ${{ envVar.name }}: ${{ envVar.value }}
     inputs:
@@ -116,7 +120,7 @@ steps:
       TF_IN_AUTOMATION: "1"
       TF_INPUT: "0"
       KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
-      KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
+      KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}/${{ parameters.kubeconfigArtifactFileName }}"
       ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
         ${{ envVar.name }}: ${{ envVar.value }}
     inputs:
