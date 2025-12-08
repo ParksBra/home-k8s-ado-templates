@@ -54,11 +54,22 @@ parameters:
       - name: ""
         value: ""
 
+  - name: preSteps
+    type: stepList
+    default: []
+
+  - name: postSteps
+    type: stepList
+    default: []
+
 jobs:
   - job: "${{ parameters.jobReference }}"
     displayName: "Apply Ansible Playbook(s)"
     steps:
       - template: _templates/self_checkout.yml
+
+      - ${{ each step in parameters.preSteps }}:
+          - ${{ step }}
 
       - checkout: ${{ parameters.ansibleRepository }}
         displayName: "Sparse Checkout Ansible Repository"
@@ -160,3 +171,6 @@ jobs:
                   ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
               echo "##[endgroup]"
             failOnStderr: true
+
+      - ${{ each step in parameters.postSteps }}:
+          - ${{ step }}
