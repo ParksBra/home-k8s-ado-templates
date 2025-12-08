@@ -1,8 +1,4 @@
 parameters:
-  - name: jobReference
-    type: string
-    default: "applyAnsiblePlaybooks"
-
   - name: kubeconfigArtifactName
     type: string
     default: kubeconfigFile

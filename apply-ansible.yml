@@ -1,8 +1,4 @@
 parameters:
-  - name: jobReference
-    type: string
-    default: "applyAnsiblePlaybooks"
-
   - name: pythonVenvPath
     type: string
     default: "$(System.DefaultWorkingDirectory)/.venv"
