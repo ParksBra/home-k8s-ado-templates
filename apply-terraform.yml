@@ -116,7 +116,7 @@ steps:
       TF_IN_AUTOMATION: "1"
       TF_INPUT: "0"
       KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
-      KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/terraform/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
+      KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
       ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
         ${{ envVar.name }}: ${{ envVar.value }}
     inputs:
