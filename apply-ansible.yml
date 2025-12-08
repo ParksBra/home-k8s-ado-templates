@@ -1,0 +1,130 @@
+parameters:
+  - name: pythonVenvPath
+    type: string
+    default: "$(System.DefaultWorkingDirectory)/.venv"
+
+  - name: pythonVenvCacheVersion
+    type: string
+    default: "1"
+
+  - name: pythonRequirementsFileRelativePath
+    type: string
+    default: "requirements.txt"
+
+  - name: ansibleRequirementsFileRelativePath
+    type: string
+    default: "requirements.yml"
+
+  - name: ansibleRepository
+    type: string
+    default: self
+
+  - name: ansibleRepositoryAnsiblePath
+    type: string
+    default: "ansible"
+
+  - name: ansibleConfigRelativePath
+    type: string
+    default: "ansible.cfg"
+
+  - name: ansibleSshConfigurations
+    type: object
+    default:
+      - group: "all"
+        user: "ansible"
+        keySecretFileName: ""
+        keyPassphrase: ""
+
+  - name: ansiblePlaybooks
+    type: object
+    default:
+      - "site.yml"
+
+  - name: ansibleDebug
+    type: boolean
+    default: false
+
+  - name: ansiblePlaybookExtraEnvironmentVariables
+    type: object
+    default: {}
+
+jobs:
+  - job: "setupAnsible"
+    displayName: "Setup Ansible"
+    steps:
+      - template: _templates/self_checkout.yml
+
+      - checkout: ${{ parameters.ansibleRepository }}
+        displayName: "Sparse Checkout Ansible Repository"
+        path: "${{ parameters.ansibleRepositoryAnsiblePath }}"
+        sparseCheckoutDirectories: "${{ parameters.ansibleRepositoryAnsiblePath }}"
+
+      - task: Bash@3
+        name: "setupEnvironment"
+        displayName: "Setup Python Environment"
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Setup Python Virtual Environment"
+                python3 -m venv ${{ parameters.pythonVenvPath }}
+                ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade pip
+            echo "##[endgroup]"
+          failOnStderr: true
+
+      - task: Cache@2
+        name: "cacheVenv"
+        displayName: "Cache Python venv"
+        inputs:
+          key: 'venv${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}/${{ parameters.pythonRequirementsFileRelativePath }}'
+          path: ${{ parameters.pythonVenvPath }}
+          cacheHitVar: cacheRestored
+
+      - task: Bash@3
+        name: "installDependencies"
+        displayName: "Install Dependencies"
+        condition: ne(variables.cacheRestored, 'true')
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Install pip requirements"
+                ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade -r $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}/${{ parameters.pythonRequirementsFileRelativePath }}
+                ${{ parameters.pythonVenvPath }}/bin/pip install ansible
+            echo "##[endgroup]"
+            echo "##[group]Install ansible-galaxy collections"
+                ${{ parameters.pythonVenvPath }}/bin/ansible-galaxy collection install --force -r $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}/${{ parameters.ansibleRequirementsFileRelativePath }}
+            echo "##[endgroup]"
+          failOnStderr: true
+
+      - ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
+        - task: DownloadSecureFile@1
+          name: ${{ sshConfig.group }}Key
+          displayName: 'Fetch ${{ sshConfig.group }} SSH Key'
+          inputs:
+            secureFile: "${{ sshConfig.keySecretFileName }}"
+
+      - task: Bash@3
+        name: "ansiblePlaybookRuns"
+        displayName: "Run Ansible Playbook(s)"
+        env:
+          ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
+          DEBUG: "${{ parameters.ansibleDebug }}"
+          ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
+            ${{ upper(sshConfig.group) }}_SSH_KEY_PATH: $( ${{ sshConfig.group }}Key.secureFilePath )
+            ${{ upper(sshConfig.group) }}_SSH_USER: ${{ sshConfig.user }}
+          ${{ each envVar in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
+            ${{ envVar.name }}: ${{ envVar.value }}
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Set Permissions for SSH Key(s)"
+            ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
+              echo "Setting permissions for ${{ sshConfig.group }} key..."
+              chmod 600 $${{ upper(sshConfig.group) }}_SSH_KEY_PATH
+            echo "##[endgroup]"
+
+            ${{ each playbook in parameters.ansiblePlaybooks }}:
+              echo "##[group]Run Ansible Playbook: ${{ playbook }}"
+                  cd $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}
+                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}/${{ playbook }}
+              echo "##[endgroup]"
+          failOnStderr: true
