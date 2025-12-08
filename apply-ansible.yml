@@ -102,29 +102,31 @@ jobs:
           inputs:
             secureFile: "${{ sshConfig.keySecretFileName }}"
 
-      - task: Bash@3
-        name: "ansiblePlaybookRuns"
-        displayName: "Run Ansible Playbook(s)"
-        env:
-          ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
-          DEBUG: "${{ parameters.ansibleDebug }}"
-          ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
-            ${{ upper(sshConfig.group) }}_SSH_KEY_PATH: $( ${{ sshConfig.group }}Key.secureFilePath )
-            ${{ upper(sshConfig.group) }}_SSH_USER: ${{ sshConfig.user }}
-          ${{ each envVar in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
-            ${{ envVar.name }}: ${{ envVar.value }}
-        inputs:
-          targetType: "inline"
-          script: |
-            echo "##[group]Set Permissions for SSH Key(s)"
-            ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
-              echo "Setting permissions for ${{ sshConfig.group }} key..."
-              chmod 600 $${{ upper(sshConfig.group) }}_SSH_KEY_PATH
-            echo "##[endgroup]"
+        - task: Bash@3
+          name: ${{ sshConfig.group }}KeyPermissions
+          displayName: 'Set Permissions for ${{ sshConfig.group }} SSH Key'
+          inputs:
+            targetType: "inline"
+            script: |
+              chmod 600 ${{ sshConfig.group }}Key.secureFilePath
 
-            ${{ each playbook in parameters.ansiblePlaybooks }}:
+      - ${{ each playbook in parameters.ansiblePlaybooks }}:
+        - task: Bash@3
+          name: "ansiblePlaybook${{ replace(playbook, '.', '_') }}"
+          displayName: "Run Ansible Playbook: ${{ playbook }}"
+          env:
+            ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
+            DEBUG: "${{ parameters.ansibleDebug }}"
+            ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
+              ${{ upper(sshConfig.group) }}_SSH_KEY_PATH: $( ${{ sshConfig.group }}Key.secureFilePath )
+              ${{ upper(sshConfig.group) }}_SSH_USER: ${{ sshConfig.user }}
+            ${{ each envVar in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
+              ${{ envVar.name }}: ${{ envVar.value }}
+          inputs:
+            targetType: "inline"
+            script: |
               echo "##[group]Run Ansible Playbook: ${{ playbook }}"
                   cd $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}
                   ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(System.DefaultWorkingDirectory)/${{ parameters.ansibleRepositoryTerraformPath }}/${{ playbook }}
               echo "##[endgroup]"
-          failOnStderr: true
+            failOnStderr: true
