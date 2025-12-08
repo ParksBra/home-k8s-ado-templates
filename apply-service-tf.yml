@@ -46,6 +46,8 @@ jobs:
       - name: terraformBackendSuffix
         value: "service-${{ parameters.terraformServiceName }}"
     steps:
+      - template: _templates/self_checkout.yml
+
       - download: ${{ parameters.kubeconfigArtifactSource }}
         displayName: 'Download Kubeconfig File Artifact'
         artifact: ${{ parameters.kubeconfigArtifactName }}

@@ -1,0 +1,6 @@
+steps:
+  - checkout: self
+    displayName: 'Checkout Pipeline Repository'
+
+  - checkout: templates
+    displayName: 'Checkout Templates Repository'
