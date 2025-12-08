@@ -48,7 +48,7 @@ jobs:
       - template: _templates/self_checkout.yml
 
       - download: ${{ parameters.kubeconfigArtifactSourcePipeline }}
-        displayName: 'Download Kubeconfig File Artifact'
+        displayName: "Download Kubeconfig File Artifact"
         artifact: ${{ parameters.kubeconfigArtifactName }}
 
       - checkout: ${{ parameters.terraformRepository }}

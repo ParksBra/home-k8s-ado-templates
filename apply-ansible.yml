@@ -62,7 +62,7 @@ jobs:
         sparseCheckoutDirectories: "${{ parameters.ansibleRepositoryAnsiblePath }}"
 
       - task: Bash@3
-        displayName: 'View Workspace Filesystem for debug'
+        displayName: "View Workspace Filesystem for debug"
         inputs:
           targetType: "inline"
           script: |
@@ -120,7 +120,7 @@ jobs:
       - ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
         - task: DownloadSecureFile@1
           name: ${{ sshConfig.group }}Key
-          displayName: 'Fetch ${{ sshConfig.group }} SSH Key'
+          displayName: "Fetch ${{ sshConfig.group }} SSH Key"
           inputs:
             secureFile: "${{ sshConfig.keySecretFileName }}"
 
@@ -132,7 +132,9 @@ jobs:
           inputs:
             targetType: "inline"
             script: |
-              chmod 600 "$KEY_PATH"
+              echo "##[group]Set Permissions for ${{ sshConfig.group }} SSH Key at $KEY_PATH"
+                  chmod 600 "$KEY_PATH"
+              echo "##[endgroup]"
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
