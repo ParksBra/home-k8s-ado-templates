@@ -15,6 +15,10 @@ parameters:
     type: string
     default: terraform
 
+  - name: terraformValidate
+    type: boolean
+    default: true
+
   - name: terraformPlanDestroy
     type: boolean
     default: false
@@ -62,6 +66,7 @@ steps:
   - task: Bash@3
     name: "runTerraformValidate"
     displayName: "Terraform Validation"
+    condition: eq('${{ parameters.terraformValidate }}', 'true')
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
       TF_IN_AUTOMATION: "1"
