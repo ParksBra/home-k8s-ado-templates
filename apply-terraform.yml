@@ -42,8 +42,8 @@ parameters:
     default: latest
 
 jobs:
-  - job: "terraformApply"
-    displayName: "Run Terraform Apply Steps"
+  - job: "applyTerraform"
+    displayName: "Apply Terraform"
     steps:
       - template: _templates/self_checkout.yml
 

@@ -51,8 +51,8 @@ parameters:
         value: ""
 
 jobs:
-  - job: "setupAnsible"
-    displayName: "Setup Ansible"
+  - job: "applyAnsiblePlaybooks"
+    displayName: "Apply Ansible Playbook(s)"
     steps:
       - template: _templates/self_checkout.yml
 
