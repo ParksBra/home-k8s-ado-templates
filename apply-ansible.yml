@@ -58,6 +58,7 @@ jobs:
 
       - checkout: ${{ parameters.ansibleRepository }}
         displayName: "Sparse Checkout Ansible Repository"
+        path: "."
         sparseCheckoutDirectories: "${{ parameters.ansibleRepositoryAnsiblePath }}"
 
       - task: Bash@3
