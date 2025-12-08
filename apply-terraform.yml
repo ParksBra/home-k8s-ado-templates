@@ -53,6 +53,7 @@ jobs:
 
       - checkout: ${{ parameters.terraformRepository }}
         displayName: "Sparse Checkout Terraform Repository"
+        path: "terraform"
         sparseCheckoutDirectories: "${{ parameters.terraformRepositoryTerraformPath }}"
 
       - task: TerraformInstaller@1
@@ -65,14 +66,14 @@ jobs:
         name: "runTerraformValidate"
         displayName: "Terraform Validation"
         env:
-          TF_DATA_DIR: "$(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
           TF_INPUT: "0"
         inputs:
           targetType: "inline"
           script: |
             echo "##[group]Run Terraform Init for Validation""
-                cd $(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend=false'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Validate"
@@ -85,18 +86,18 @@ jobs:
         displayName: "Terraform Plan"
         condition: eq('${{ parameters.terraformPlanDestroy }}', 'false')
         env:
-          TF_DATA_DIR: "$(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
           TF_INPUT: "0"
           KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
-          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/terraform/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
           ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
             ${{ envVar.name }}: ${{ envVar.value }}
         inputs:
           targetType: "inline"
           script: |
             echo "##[group]Run Terraform Init"
-                cd $(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan"
@@ -109,18 +110,18 @@ jobs:
         displayName: "Terraform Plan for Destroy"
         condition: eq('${{ parameters.terraformPlanDestroy }}', 'true')
         env:
-          TF_DATA_DIR: "$(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
           TF_INPUT: "0"
           KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
-          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/terraform/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}"
           ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
             ${{ envVar.name }}: ${{ envVar.value }}
         inputs:
           targetType: "inline"
           script: |
             echo "##[group]Run Terraform Init"
-                cd $(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan for Destroy"
@@ -132,7 +133,7 @@ jobs:
         name: "runTerraformApply"
         displayName: "Terraform Apply"
         env:
-          TF_DATA_DIR: "$(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
           TF_INPUT: "0"
           KUBE_NAMESPACE: "$(terraformBackendNamespace)"
@@ -143,7 +144,7 @@ jobs:
           targetType: "inline"
           script: |
             echo "##[group]Run Terraform Apply"
-                cd $(Pipeline.Workspace)/${{ parameters.terraformRepositoryTerraformPath }}
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform apply -no-color -auto-approve tfplan
             echo "##[endgroup]"
           failOnStderr: true
