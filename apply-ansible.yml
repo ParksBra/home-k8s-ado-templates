@@ -59,14 +59,6 @@ steps:
     sparseCheckoutDirectories: "${{ parameters.ansibleRepositoryAnsiblePath }}"
 
   - task: Bash@3
-    displayName: "View Workspace Filesystem for debug"
-    inputs:
-      targetType: "inline"
-      script: |
-        echo "Structure of work folder of this pipeline:"
-        tree $(Pipeline.Workspace)
-
-  - task: Bash@3
     name: "setupEnvironment"
     displayName: "Setup Python Environment"
     inputs:
