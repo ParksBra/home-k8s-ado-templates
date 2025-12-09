@@ -71,7 +71,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactCurrent"
         displayName: "Download Terraform Plan Artifact (Current Build)"
-        condition: eq(succeeded(${{ parameters.planStageName }}), true)
+        condition: eq(stageDependencies.${{ parameters.planStageName }}.result, 'Succeeded')
         inputs:
           buildType: "current"
           artifact: terraformPlan
@@ -80,7 +80,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactLatest"
         displayName: "Download Terraform Plan Artifact (Latest from Branch)"
-        condition: eq(succeeded(${{ parameters.planStageName }}), false) # Fallback to latest from branch if plan not found in current build
+        condition: eq(stageDependencies.${{ parameters.planStageName }}.result, 'Skipped') # Fallback to latest from branch if plan not found in current build
         inputs:
           buildType: "specific"
           project: "$(System.TeamProjectId)"
