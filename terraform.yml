@@ -76,24 +76,8 @@ stages:
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
 
-  - stage: DebugValues
-    displayName: "Debug Conditions"
-    dependsOn: verifyAndPlanTerraform
-    condition: always()
-    variables:
-      VERIFY_RESULT: $[ dependencies.verifyAndPlanTerraform.result ]
-    jobs:
-      - job: ShowValues
-        steps:
-          - bash: |
-              echo "Build Reason: $(Build.Reason)"
-              echo "Param terraformApply: ${{ parameters.terraformApply }}"
-              echo "Plan Stage Result: $(stageDependencies.verifyAndPlanTerraform.result)"
-              echo "Verify Result: $(VERIFY_RESULT)"
-            displayName: "Print Variables"
-
   - stage: applyTerraformCurrent
-    displayName: "Apply Planned Terraform (Current Plan)"
+    displayName: "Apply Current Planned Terraform (Current Build Plan)"
     dependsOn: verifyAndPlanTerraform
     condition: >-
       and(
@@ -122,7 +106,7 @@ stages:
           planArtifactUseCurrent: true
 
   - stage: applyTerraformLatest
-    displayName: "Apply Planned Terraform (Latest Plan)"
+    displayName: "Apply Latest Planned Terraform (Latest Build Plan)"
     dependsOn: verifyAndPlanTerraform
     condition: >-
       and(
