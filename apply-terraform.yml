@@ -68,17 +68,19 @@ jobs:
       #   displayName: "Download Terraform Plan Artifact"
       #   artifact: terraformPlan
 
-      - template: "_templates/pipeline-cached-artifact.yml"
-        parameters:
-          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
-          cacheVersion: "1"
-          cacheKeyPrefix: "tfplan"
-          action: "restore"
+      - task: Cache@2
+        name: restorePlanArtifact
+        displayName: "Restore Plan Artifact"
+        inputs:
+          key: '"${{ parameters.cacheKeyPrefix }}" | "v${{ parameters.cacheVersion }}" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)"'
+          restoreKeys: '"${{ parameters.cacheKeyPrefix }}" | "v${{ parameters.cacheVersion }}" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)"'
+          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          cacheHitVar: "restoreCacheHit"
 
       - task: Bash@3
         name: "runTerraformApply"
         displayName: "Terraform Apply"
-        condition: succeeded()
+        condition: and(succeeded(), eq(variables.restoreCacheHit, 'true'))
         env:
           TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"

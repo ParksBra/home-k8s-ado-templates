@@ -2,6 +2,8 @@ parameters:
   - name: cachedArtifactPath
     type: string
 
+  - name: artifactDepend
+
   - name: cacheVersion
     type: string
     default: "1"

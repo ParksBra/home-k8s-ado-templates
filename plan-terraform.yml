@@ -148,9 +148,10 @@ jobs:
       #   artifact: terraformPlan
       #   displayName: "Publish Terraform Plan Artifact"
 
-      - template: "_templates/pipeline-cached-artifact.yml"
-        parameters:
-          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
-          cacheVersion: "1"
-          cacheKeyPrefix: "tfplan"
-          action: "publish"
+      - task: Cache@2
+        name: cachePlanArtifact
+        displayName: "Cache Terraform Plan Artifact"
+        inputs:
+          key: '"${{ parameters.cacheKeyPrefix }}" | "v${{ parameters.cacheVersion }}" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)" | $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan'
+          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          cacheHitVar: "publishCacheHit"
