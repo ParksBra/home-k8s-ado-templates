@@ -68,27 +68,27 @@ jobs:
         inputs:
           terraformVersion: "${{ parameters.terraformVersion }}"
 
-      - $ {{ if eq(parameters.planArtifactUseCurrentBuild, true) }}:
-        - task: DownloadPipelineArtifact@2
-          name: "downloadPlanArtifact"
-          displayName: "Download Terraform Plan Artifact (Current Build)"
-          inputs:
-            buildType: "current"
-            artifact: terraformPlan
-            targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
+      - task: DownloadPipelineArtifact@2
+        name: "downloadPlanArtifact"
+        displayName: "Download Terraform Plan Artifact (Current Build)"
+        condition: eq(${{ parameters.planArtifactUseCurrentBuild }}, true)
+        inputs:
+          buildType: "current"
+          artifact: terraformPlan
+          targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
 
-      - $ {{ if eq(parameters.planArtifactUseCurrentBuild, false) }}:
-        - task: DownloadPipelineArtifact@2
-          name: "downloadPlanArtifact"
-          displayName: "Download Terraform Plan Artifact (Latest from Branch)"
-          inputs:
-            buildType: "specific"
-            project: "$(System.TeamProjectId)"
-            pipeline: "$(System.DefinitionId)"
-            buildVersionToDownload: "latestFromBranch"
-            branchName: "$(Build.SourceBranch)"
-            artifact: terraformPlan
-            targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
+      - task: DownloadPipelineArtifact@2
+        name: "downloadPlanArtifact"
+        displayName: "Download Terraform Plan Artifact (Latest from Branch)"
+        condition: eq(${{ parameters.planArtifactUseCurrentBuild }}, false)
+        inputs:
+          buildType: "specific"
+          project: "$(System.TeamProjectId)"
+          pipeline: "$(System.DefinitionId)"
+          buildVersionToDownload: "latestFromBranch"
+          branchName: "$(Build.SourceBranch)"
+          artifact: terraformPlan
+          targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
 
       - task: Bash@3
         name: "runTerraformShow"
