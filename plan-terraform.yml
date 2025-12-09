@@ -140,18 +140,14 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan for Destroy"
-                terraform plan -no-color -destroy -out=.terraform/tfplan
+                terraform plan -no-color -destroy -out=tfplan
             echo "##[endgroup]"
           failOnStderr: true
 
-      # - publish: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
-      #   artifact: terraformPlan
-      #   displayName: "Publish Terraform Plan Artifact"
-
-      - task: Cache@2
-        name: cachePlanArtifact
-        displayName: "Cache Terraform Plan Artifact"
+      - task: PublishPipelineArtifact@1
+        name: "publishPlanArtifact"
+        displayName: "Publish Terraform Plan Artifact"
         inputs:
-          key: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)" | $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan'
-          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
-          cacheHitVar: "publishCacheHit"
+          targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+          artifact: terraformPlan
+          publishLocation: "pipeline"
