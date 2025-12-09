@@ -76,7 +76,7 @@ steps:
   - task: Bash@3
     name: "runTerraformValidate"
     displayName: "Terraform Validation"
-    condition: succeeded() and eq('${{ parameters.terraformValidate }}', 'true')
+    condition: and(succeeded(), eq('${{ parameters.terraformValidate }}', 'true'))
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
       TF_IN_AUTOMATION: "1"
@@ -96,7 +96,7 @@ steps:
   - task: Bash@3
     name: "runTerraformPlan"
     displayName: "Terraform Plan"
-    condition: succeeded() and eq('${{ parameters.terraformPlanDestroy }}', 'false')
+    condition: and(succeeded(), eq('${{ parameters.terraformPlanDestroy }}', 'false'))
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
       TF_IN_AUTOMATION: "1"
@@ -120,7 +120,7 @@ steps:
   - task: Bash@3
     name: "runTerraformPlanDestroy"
     displayName: "Terraform Plan for Destroy"
-    condition: succeeded() and eq('${{ parameters.terraformPlanDestroy }}', 'true')
+    condition: and(succeeded(), eq('${{ parameters.terraformPlanDestroy }}', 'true'))
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
       TF_IN_AUTOMATION: "1"
@@ -146,7 +146,7 @@ steps:
   - task: Bash@3
     name: "runTerraformApply"
     displayName: "Terraform Apply"
-    condition: succeeded() and eq('${{ parameters.terraformApply }}', 'true')
+    condition: and(succeeded(), eq('${{ parameters.terraformApply }}', 'true'))
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
       TF_IN_AUTOMATION: "1"
