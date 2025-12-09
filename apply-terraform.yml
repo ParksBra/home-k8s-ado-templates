@@ -79,7 +79,7 @@ jobs:
 
 
       - task: Bash@3
-        name: "runTerraformApply"
+        name: "runTerraformShow"
         displayName: "Display Terraform Plan"
         condition: eq(variables.restoreCacheHit, 'true')
         env:
