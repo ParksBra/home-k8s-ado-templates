@@ -70,7 +70,7 @@ jobs:
         inputs:
           buildType: "specific"
           project: "$(System.TeamProjectId)"
-          pipeline: "$(Build.DefinitionId)"
+          pipeline: "source"
           buildVersionToDownload: "latestFromBranch"
           branchName: "$(Build.SourceBranch)"
           artifact: terraformPlan
