@@ -114,7 +114,8 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan"
-                terraform plan -no-color -out=.terraform/tfplan
+                mkdir -p tfplans
+                terraform plan -no-color -out=tfplans/tfplan
             echo "##[endgroup]"
           failOnStderr: true
 
@@ -140,7 +141,8 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan for Destroy"
-                terraform plan -no-color -destroy -out=.terraform/tfplan
+                mkdir -p tfplans
+                terraform plan -no-color -destroy -out=tfplans/tfplan
             echo "##[endgroup]"
           failOnStderr: true
 
@@ -152,6 +154,6 @@ jobs:
         name: cachePlanArtifact
         displayName: "Cache Terraform Plan Artifact"
         inputs:
-          key: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)" | $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan'
-          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          key: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)" | $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans/tfplan'
+          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans"
           cacheHitVar: "publishCacheHit"

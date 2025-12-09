@@ -74,13 +74,29 @@ jobs:
         inputs:
           key: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)"'
           restoreKeys: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)"'
-          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans"
           cacheHitVar: "restoreCacheHit"
+
+
+      - task: Bash@3
+        name: "runTerraformApply"
+        displayName: "Display Terraform Plan"
+        condition: eq(variables.restoreCacheHit, 'true')
+        env:
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+        inputs:
+          targetType: "inline"
+          script: |
+            cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
+            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans/tfplan"
+          failOnStderr: true
 
       - task: Bash@3
         name: "runTerraformApply"
         displayName: "Terraform Apply"
-        condition: and(succeeded(), eq(variables.restoreCacheHit, 'true'))
+        condition: eq(variables.restoreCacheHit, 'true')
         env:
           TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
@@ -99,7 +115,6 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Apply"
-                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
-                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan"
+                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans/tfplan"
             echo "##[endgroup]"
           failOnStderr: true
