@@ -76,6 +76,19 @@ stages:
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
 
+  - stage: DebugValues
+    displayName: "Debug Conditions"
+    dependsOn: verifyAndPlanTerraform
+    condition: always()
+    jobs:
+      - job: ShowValues
+        steps:
+          - bash: |
+              echo "Build Reason: $(Build.Reason)"
+              echo "Param terraformApply: ${{ parameters.terraformApply }}"
+              echo "Plan Stage Result: $(stageDependencies.verifyAndPlanTerraform.result)"
+            displayName: "Print Variables"
+
   - stage: applyTerraformCurrent
     displayName: "Apply Planned Terraform (Current Plan)"
     dependsOn: verifyAndPlanTerraform
