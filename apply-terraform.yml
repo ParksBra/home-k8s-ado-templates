@@ -100,7 +100,7 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend=false
             echo "##[endgroup]"
-            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/fplan"
+            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
           failOnStderr: true
 
       - task: Bash@3
