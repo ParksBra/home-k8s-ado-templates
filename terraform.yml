@@ -1,0 +1,90 @@
+parameters:
+  - name: kubeconfigArtifactFileName
+    type: string
+    default: kubeconfig
+
+  - name: kubeconfigArtifactName
+    type: string
+    default: kubeConfig
+
+  - name: kubeconfigArtifactSourcePipeline
+    type: string
+    default: clusterBase
+
+  - name: terraformRepository
+    type: string
+    default: self
+
+  - name: terraformRepositoryTerraformPath
+    type: string
+    default: terraform
+
+  - name: terraformValidate
+    type: boolean
+    default: true
+
+  - name: terraformPlanDestroy
+    type: boolean
+    default: false
+
+  - name: terraformBackendNamespace
+    type: string
+    default: kube-system
+
+  - name: terraformBackendSuffix
+    type: string
+    default: terraform
+
+  - name: terraformVariables
+    type: object
+    default:
+      - name: ""
+        value: ""
+
+  - name: terraformExtraEnvironmentVariables
+    type: object
+    default:
+      - name: ""
+        value: ""
+
+  - name: terraformVersion
+    type: string
+    default: latest
+
+stages:
+  - stage: verifyAndPlanTerraform
+    displayName: "Verify and Plan Terraform"
+    condition: in(Build.Reason, 'Manual', 'PullRequest')
+    jobs:
+      - template: plan-terraform.yml
+        parameters:
+          kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
+          kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
+          kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
+          terraformRepository: ${{ parameters.terraformRepository }}
+          terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
+          terraformValidate: ${{ parameters.terraformValidate }}
+          terraformPlanDestroy: ${{ parameters.terraformPlanDestroy }}
+          terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
+          terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
+          terraformVariables: ${{ parameters.terraformVariables }}
+          terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
+          terraformVersion: ${{ parameters.terraformVersion }}
+
+  - stage: applyTerraform
+    displayName: "Apply Planned Terraform"
+    dependsOn: verifyAndPlanTerraform
+    condition: and(succeeded(), in(Build.Reason, 'Manual', 'IndividualCI'))
+    jobs:
+      - template: apply-terraform.yml
+        parameters:
+          kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
+          kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
+          kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
+          terraformRepository: ${{ parameters.terraformRepository }}
+          terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
+          terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
+          terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
+          terraformVariables: ${{ parameters.terraformVariables }}
+          terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
+          terraformVersion: ${{ parameters.terraformVersion }}
