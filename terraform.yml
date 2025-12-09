@@ -75,7 +75,7 @@ stages:
           terraformVariables: ${{ parameters.terraformVariables }}
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
-  - ${{ if eq(parameters.planArtifactUseCurrent, true) }}:
+  - ${{ if succeeded(verifyAndPlanTerraform) }}:
     - stage: applyTerraformCurrent
       displayName: "Apply Planned Terraform (Current Plan)"
       condition: >-
@@ -100,7 +100,7 @@ stages:
             terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
             terraformVersion: ${{ parameters.terraformVersion }}
             planArtifactUseCurrent: true
-  - ${{ if eq(parameters.planArtifactUseCurrent, false) }}:
+  - ${{ else }}:
     - stage: applyTerraformLatest
       displayName: "Apply Planned Terraform (Latest Plan)"
       condition: >-
