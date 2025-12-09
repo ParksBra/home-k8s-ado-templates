@@ -76,6 +76,8 @@ steps:
   - task: Bash@3
     name: "runTerraformValidate"
     displayName: "Terraform Validation"
+    depends_on:
+      - installTerraform
     condition: eq('${{ parameters.terraformValidate }}', 'true')
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
@@ -96,6 +98,8 @@ steps:
   - task: Bash@3
     name: "runTerraformPlan"
     displayName: "Terraform Plan"
+    depends_on:
+      - runTerraformValidate
     condition: eq('${{ parameters.terraformPlanDestroy }}', 'false')
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
@@ -120,6 +124,8 @@ steps:
   - task: Bash@3
     name: "runTerraformPlanDestroy"
     displayName: "Terraform Plan for Destroy"
+    depends_on:
+      - runTerraformValidate
     condition: eq('${{ parameters.terraformPlanDestroy }}', 'true')
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
@@ -146,6 +152,9 @@ steps:
   - task: Bash@3
     name: "runTerraformApply"
     displayName: "Terraform Apply"
+    depends_on:
+      - runTerraformPlan
+      - runTerraformPlanDestroy
     env:
       TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
       TF_IN_AUTOMATION: "1"
