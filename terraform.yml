@@ -75,10 +75,13 @@ stages:
           terraformVariables: ${{ parameters.terraformVariables }}
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
-  - ${{ if succeeded(verifyAndPlanTerraform) }}:
-    - stage: applyTerraformCurrent
-      displayName: "Apply Planned Terraform (Current Plan)"
-      condition: >-
+
+  - stage: applyTerraformCurrent
+    displayName: "Apply Planned Terraform (Current Plan)"
+    dependsOn: verifyAndPlanTerraform
+    condition: >-
+      and(
+        in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
         or(
           in(variables['Build.Reason'], 'IndividualCI'),
           and(
@@ -86,24 +89,28 @@ stages:
             eq('${{ parameters.terraformApply }}', 'true')
           )
         )
-      jobs:
-        - template: apply-terraform.yml
-          parameters:
-            kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
-            kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
-            kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
-            terraformRepository: ${{ parameters.terraformRepository }}
-            terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
-            terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
-            terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
-            terraformVariables: ${{ parameters.terraformVariables }}
-            terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
-            terraformVersion: ${{ parameters.terraformVersion }}
-            planArtifactUseCurrent: true
-  - ${{ else }}:
-    - stage: applyTerraformLatest
-      displayName: "Apply Planned Terraform (Latest Plan)"
-      condition: >-
+      )
+    jobs:
+      - template: apply-terraform.yml
+        parameters:
+          kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
+          kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
+          kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
+          terraformRepository: ${{ parameters.terraformRepository }}
+          terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
+          terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
+          terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
+          terraformVariables: ${{ parameters.terraformVariables }}
+          terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
+          terraformVersion: ${{ parameters.terraformVersion }}
+          planArtifactUseCurrent: true
+
+  - stage: applyTerraformLatest
+    displayName: "Apply Planned Terraform (Latest Plan)"
+    dependsOn: verifyAndPlanTerraform
+    condition: >-
+      and(
+        in(dependencies.verifyAndPlanTerraform.result, 'Skipped', 'None'),
         or(
           in(variables['Build.Reason'], 'IndividualCI'),
           and(
@@ -111,17 +118,18 @@ stages:
             eq('${{ parameters.terraformApply }}', 'true')
           )
         )
-      jobs:
-        - template: apply-terraform.yml
-          parameters:
-            kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
-            kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
-            kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
-            terraformRepository: ${{ parameters.terraformRepository }}
-            terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
-            terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
-            terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
-            terraformVariables: ${{ parameters.terraformVariables }}
-            terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
-            terraformVersion: ${{ parameters.terraformVersion }}
-            planArtifactUseCurrent: false
+      )
+    jobs:
+      - template: apply-terraform.yml
+        parameters:
+          kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
+          kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
+          kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
+          terraformRepository: ${{ parameters.terraformRepository }}
+          terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
+          terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
+          terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
+          terraformVariables: ${{ parameters.terraformVariables }}
+          terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
+          terraformVersion: ${{ parameters.terraformVersion }}
+          planArtifactUseCurrent: false
