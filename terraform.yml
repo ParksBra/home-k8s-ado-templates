@@ -77,7 +77,6 @@ stages:
 
   - stage: applyTerraform
     displayName: "Apply Planned Terraform"
-    dependsOn: verifyAndPlanTerraform
     condition: or(and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI')), and(in(variables['Build.Reason'], 'Manual'), eq('${{ parameters.terraformApply }}', 'true')))
     jobs:
       - template: apply-terraform.yml
