@@ -67,7 +67,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactCurrent"
         displayName: "Download Terraform Plan Artifact (Current Build)"
-        condition: in(variables['Build.Reason'], 'Manual')
+        condition: and(succeeded(), in(variables['Build.Reason'], 'Manual')) # Only download from current build for manual runs (Plan should run first)
         inputs:
           buildType: "current"
           artifact: terraformPlan
@@ -76,7 +76,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactLatest"
         displayName: "Download Terraform Plan Artifact (Latest from Branch)"
-        condition: notIn(variables['Build.Reason'], 'Manual') # Fallback to latest from branch if plan not found in current build
+        condition: and(succeeded(), notIn(variables['Build.Reason'], 'Manual')) # Fallback to latest from branch if plan not found in current build
         inputs:
           buildType: "specific"
           project: "$(System.TeamProjectId)"
@@ -100,7 +100,7 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend=false
             echo "##[endgroup]"
-            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/terraformPlan/tfplan"
+            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/fplan"
           failOnStderr: true
 
       - task: Bash@3
@@ -124,6 +124,6 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Apply"
-                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/terraformPlan/tfplan"
+                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
             echo "##[endgroup]"
           failOnStderr: true
