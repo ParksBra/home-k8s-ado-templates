@@ -87,7 +87,7 @@ steps:
     name: "cacheVenv"
     displayName: "Cache Python venv"
     inputs:
-      key: '$(venvCacheKey)'
+      key: "$(venvCacheKey)"
       path: ${{ parameters.pythonVenvPath }}
       cacheHitVar: cacheRestored
 
