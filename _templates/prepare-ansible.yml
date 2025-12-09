@@ -33,7 +33,7 @@ parameters:
 
 
 steps:
-  - template: _templates/self_checkout.yml
+  - template: self_checkout.yml
 
   - checkout: ${{ parameters.ansibleRepository }}
     displayName: "Sparse Checkout Ansible Repository"
