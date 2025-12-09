@@ -80,6 +80,8 @@ stages:
     displayName: "Debug Conditions"
     dependsOn: verifyAndPlanTerraform
     condition: always()
+    variables:
+      VERIFY_RESULT: $[ dependencies.verifyAndPlanTerraform.result ]
     jobs:
       - job: ShowValues
         steps:
@@ -87,6 +89,7 @@ stages:
               echo "Build Reason: $(Build.Reason)"
               echo "Param terraformApply: ${{ parameters.terraformApply }}"
               echo "Plan Stage Result: $(stageDependencies.verifyAndPlanTerraform.result)"
+              echo "Verify Result: $(VERIFY_RESULT)"
             displayName: "Print Variables"
 
   - stage: applyTerraformCurrent
