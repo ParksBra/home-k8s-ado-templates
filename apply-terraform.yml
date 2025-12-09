@@ -43,10 +43,6 @@ parameters:
     type: string
     default: latest
 
-  - name: planStageName
-    type: string
-    default: "verifyAndPlanTerraform"
-
 jobs:
   - job: applyPlannedTerraform
     displayName: "Apply Planned Terraform"
@@ -71,7 +67,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactCurrent"
         displayName: "Download Terraform Plan Artifact (Current Build)"
-        condition: eq(stageDependencies.${{ parameters.planStageName }}.result, 'Succeeded')
+        condition: in(variables['Build.Reason'], 'Manual')
         inputs:
           buildType: "current"
           artifact: terraformPlan
@@ -80,7 +76,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactLatest"
         displayName: "Download Terraform Plan Artifact (Latest from Branch)"
-        condition: eq(stageDependencies.${{ parameters.planStageName }}.result, 'Skipped') # Fallback to latest from branch if plan not found in current build
+        condition: notIn(variables['Build.Reason'], 'Manual') # Fallback to latest from branch if plan not found in current build
         inputs:
           buildType: "specific"
           project: "$(System.TeamProjectId)"

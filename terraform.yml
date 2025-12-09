@@ -91,4 +91,3 @@ stages:
           terraformVariables: ${{ parameters.terraformVariables }}
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
-          planStageName: "verifyAndPlanTerraform"
