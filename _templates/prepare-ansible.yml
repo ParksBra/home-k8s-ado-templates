@@ -83,6 +83,9 @@ steps:
         echo "##[group]Install Ansible"
             ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade ansible
         echo "##[endgroup]"
+        echo "##[group]Install Ansible-Lint"
+            ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade ansible-lint
+        echo "##[endgroup]"
 
         if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}" ]; then
         echo "##[group]Install pip requirements"

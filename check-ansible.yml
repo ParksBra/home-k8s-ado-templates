@@ -40,6 +40,10 @@ parameters:
     default:
       - "site.yml"
 
+  - name: ansibleLint
+    type: boolean
+    default: true
+
   - name: ansibleDebug
     type: boolean
     default: false
@@ -63,6 +67,27 @@ jobs:
           ansibleRepository: ${{ parameters.ansibleRepository }}
           ansibleRepositoryAnsiblePath: ${{ parameters.ansibleRepositoryAnsiblePath }}
           ansibleSshConfigurations: ${{ parameters.ansibleSshConfigurations }}
+
+      - ${{ each playbook in parameters.ansiblePlaybooks }}:
+        - task: Bash@3
+          name: "ansibleCheckPlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
+          displayName: "Check / Dry Run Ansible Playbook: ${{ playbook }}"
+          condition: succeeded()
+          env:
+            ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
+            DEBUG: "${{ parameters.ansibleDebug }}"
+            ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
+              ${{ upper(sshConfig.group) }}_SSH_KEY_PATH: $(${{ sshConfig.group }}Key.secureFilePath)
+              ${{ upper(sshConfig.group) }}_SSH_USER: ${{ sshConfig.user }}
+            ${{ each envVar in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
+              ${{ envVar.name }}: ${{ envVar.value }}
+          inputs:
+            targetType: "inline"
+            script: |
+              echo "##[group]Lint Ansible Playbook: ${{ playbook }}"
+                  cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
+                  ${{ parameters.pythonVenvPath }}/bin/ansible-lint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
+              echo "##[endgroup]"
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
