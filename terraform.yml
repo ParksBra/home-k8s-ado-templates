@@ -27,6 +27,10 @@ parameters:
     type: boolean
     default: false
 
+  - name: terraformApply
+    type: boolean
+    default: true
+
   - name: terraformBackendNamespace
     type: string
     default: kube-system
@@ -74,7 +78,7 @@ stages:
   - stage: applyTerraform
     displayName: "Apply Planned Terraform"
     dependsOn: verifyAndPlanTerraform
-    condition: and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI'))
+    condition: or(and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI')), and(in(variables['Build.Reason'], 'Manual'), eq(parameters.terraformApply, 'true')))
     jobs:
       - template: apply-terraform.yml
         parameters:
