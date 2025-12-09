@@ -74,7 +74,7 @@ jobs:
         inputs:
           key: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)"'
           restoreKeys: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)"'
-          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans"
+          path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           cacheHitVar: "restoreCacheHit"
 
 
@@ -89,11 +89,7 @@ jobs:
         inputs:
           targetType: "inline"
           script: |
-            echo "##[group]Run Terraform Init for Display (No Backend)"
-                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
-                terraform init -no-color -upgrade -reconfigure  -backend=false
-            echo "##[endgroup]"
-            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans/tfplan"
+            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan"
           failOnStderr: true
 
       - task: Bash@3
@@ -118,6 +114,6 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Apply"
-                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplans/tfplan"
+                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan"
             echo "##[endgroup]"
           failOnStderr: true
