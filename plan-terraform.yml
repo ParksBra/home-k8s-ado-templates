@@ -114,7 +114,7 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan"
-                terraform plan -no-color -out=.terraform/tfplan
+                terraform plan -no-color -out=tfplan
             echo "##[endgroup]"
           failOnStderr: true
 
