@@ -77,7 +77,7 @@ stages:
 
   - stage: applyTerraform
     displayName: "Apply Planned Terraform"
-    condition: or(and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI')), and(in(variables['Build.Reason'], 'Manual'), eq('${{ parameters.terraformApply }}', 'true')))
+    condition: or(and(in(variables['Build.Reason'], 'Manual', 'IndividualCI')), and(in(variables['Build.Reason'], 'Manual'), eq('${{ parameters.terraformApply }}', 'true')))
     jobs:
       - template: apply-terraform.yml
         parameters:
