@@ -70,7 +70,7 @@ jobs:
 
       - template: "_templates/pipeline-cached-artifact.yml"
         parameters:
-          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           cacheVersion: "1"
           cacheKeyPrefix: "tfplan"
           action: "restore"
@@ -98,6 +98,6 @@ jobs:
             echo "##[endgroup]"
             echo "##[group]Run Terraform Apply"
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
-                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraformPlan/tfplan"
+                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan"
             echo "##[endgroup]"
           failOnStderr: true

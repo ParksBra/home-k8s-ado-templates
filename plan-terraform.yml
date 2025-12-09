@@ -114,7 +114,7 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan"
-                terraform plan -no-color -out=tfplan
+                terraform plan -no-color -out=.terraform/tfplan
             echo "##[endgroup]"
           failOnStderr: true
 
@@ -140,7 +140,7 @@ jobs:
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
             echo "##[group]Run Terraform Plan for Destroy"
-                terraform plan -no-color -destroy -out=tfplan
+                terraform plan -no-color -destroy -out=.terraform/tfplan
             echo "##[endgroup]"
           failOnStderr: true
 
@@ -150,7 +150,7 @@ jobs:
 
       - template: "_templates/pipeline-cached-artifact.yml"
         parameters:
-          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           cacheVersion: "1"
           cacheKeyPrefix: "tfplan"
           action: "publish"
