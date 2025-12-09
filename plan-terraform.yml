@@ -83,7 +83,7 @@ jobs:
         inputs:
           targetType: "inline"
           script: |
-            echo "##[group]Run Terraform Init for Validation"
+            echo "##[group]Run Terraform Init for Validation (No Backend)"
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend=false
             echo "##[endgroup]"
