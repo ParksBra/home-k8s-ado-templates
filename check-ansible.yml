@@ -50,17 +50,9 @@ parameters:
       - name: ""
         value: ""
 
-  - name: preApplySteps
-    type: stepList
-    default: []
-
-  - name: postApplySteps
-    type: stepList
-    default: []
-
 jobs:
-  - job: runAnsiblePlaybooks
-    displayName: "Run Ansible Playbooks"
+  - job: checkAnsiblePlaybooks
+    displayName: "Check Ansible Playbooks"
     steps:
       - template: _templates/prepare-ansible.yml
         parameters:
@@ -72,13 +64,10 @@ jobs:
           ansibleRepositoryAnsiblePath: ${{ parameters.ansibleRepositoryAnsiblePath }}
           ansibleSshConfigurations: ${{ parameters.ansibleSshConfigurations }}
 
-      - ${{ each step in parameters.preApplySteps }}:
-          - ${{ step }}
-
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
-          name: "ansiblePlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
-          displayName: "Run Ansible Playbook: ${{ playbook }}"
+          name: "ansibleCheckPlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
+          displayName: "Check / Dry Run Ansible Playbook: ${{ playbook }}"
           condition: succeeded()
           env:
             ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
@@ -91,11 +80,8 @@ jobs:
           inputs:
             targetType: "inline"
             script: |
-              echo "##[group]Run Ansible Playbook: ${{ playbook }}"
+              echo "##[group]Check Ansible Playbook: ${{ playbook }}"
                   cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
-                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
+                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
               echo "##[endgroup]"
             failOnStderr: true
-
-      - ${{ each step in parameters.postApplySteps }}:
-          - ${{ step }}
