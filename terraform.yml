@@ -54,7 +54,7 @@ parameters:
 stages:
   - stage: verifyAndPlanTerraform
     displayName: "Verify and Plan Terraform"
-    condition: in($(Build.Reason), 'Manual', 'PullRequest')
+    condition: in(variables['Build.Reason'], 'Manual', 'PullRequest')
     jobs:
       - template: plan-terraform.yml
         parameters:
@@ -74,7 +74,7 @@ stages:
   - stage: applyTerraform
     displayName: "Apply Planned Terraform"
     dependsOn: verifyAndPlanTerraform
-    condition: and(succeeded(), in($(Build.Reason), 'Manual', 'IndividualCI'))
+    condition: and(succeeded(), in(variables['Build.Reason'], 'Manual', 'IndividualCI'))
     jobs:
       - template: apply-terraform.yml
         parameters:
