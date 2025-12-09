@@ -66,7 +66,6 @@ jobs:
 
       - download: current
         displayName: "Download Terraform Plan Artifact"
-        path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
         artifact: terraformPlan
 
       - task: Bash@3
@@ -92,6 +91,6 @@ jobs:
             echo "##[endgroup]"
             echo "##[group]Run Terraform Apply"
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
-                terraform apply -no-color -auto-approve tfplan
+                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraformPlan/tfplan"
             echo "##[endgroup]"
           failOnStderr: true
