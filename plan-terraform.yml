@@ -144,6 +144,13 @@ jobs:
             echo "##[endgroup]"
           failOnStderr: true
 
-      - publish: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
-        artifact: terraformPlan
-        displayName: "Publish Terraform Plan Artifact"
+      # - publish: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+      #   artifact: terraformPlan
+      #   displayName: "Publish Terraform Plan Artifact"
+
+      - template: "_templates/pipeline-cached-artifact.yml"
+        parameters:
+          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+          cacheVersion: "1"
+          cacheKeyPrefix: "tfplan"
+          action: "publish"

@@ -64,9 +64,16 @@ jobs:
         inputs:
           terraformVersion: "${{ parameters.terraformVersion }}"
 
-      - download: current
-        displayName: "Download Terraform Plan Artifact"
-        artifact: terraformPlan
+      # - download: current
+      #   displayName: "Download Terraform Plan Artifact"
+      #   artifact: terraformPlan
+
+      - template: "_templates/pipeline-cached-artifact.yml"
+        parameters:
+          cachedArtifactPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+          cacheVersion: "1"
+          cacheKeyPrefix: "tfplan"
+          action: "restore"
 
       - task: Bash@3
         name: "runTerraformApply"

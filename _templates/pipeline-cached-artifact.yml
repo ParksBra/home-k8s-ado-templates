@@ -1,0 +1,41 @@
+parameters:
+  - name: cachedArtifactPath
+    type: string
+
+  - name: cacheVersion
+    type: string
+    default: "1"
+
+  - name: cacheKeyPrefix
+    type: string
+    default: "cached-artifact"
+
+  - name: action
+    type: string
+    values:
+      - publish
+      - restore
+
+steps:
+  - task: Cache@2
+    name: publishCachedArtifact
+    displayName: "Publish Cached Artifact"
+    inputs:
+      key: "'${{ parameters.cacheKeyPrefix }}' | 'v${{ parameters.cacheVersion }}' | '$(Build.Repository.ID)' | '$(Build.SourceBranch)' | ${{ parameters.cachedArtifactPath }}"
+      path: "${{ parameters.cachedArtifactPath }}"
+      cacheHitVar: "publishCacheHit"
+    condition: eq('${{ parameters.action }}', 'publish')
+
+  - task: Cache@2
+    name: restoreCachedArtifact
+    displayName: "Restore Cached Artifact"
+    inputs:
+      key: "'${{ parameters.cacheKeyPrefix }}' | 'v${{ parameters.cacheVersion }}' | '$(Build.Repository.ID)' | '$(Build.SourceBranch)'"
+      restoreKeys: "'${{ parameters.cacheKeyPrefix }}' | 'v${{ parameters.cacheVersion }}' | '$(Build.Repository.ID)' | '$(Build.SourceBranch)'"
+      path: "${{ parameters.cachedArtifactPath }}"
+      cacheHitVar: "restoreCacheHit"
+    condition: eq('${{ parameters.action }}', 'restore')
+
+  - bash: exit 1
+    displayName: "Fail if Cache Missed"
+    condition: and(eq('${{ parameters.action }}', 'restore'), ne(variables.restoreCacheHit, 'true'))
