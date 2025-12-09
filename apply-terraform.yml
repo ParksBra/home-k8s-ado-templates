@@ -43,9 +43,9 @@ parameters:
     type: string
     default: latest
 
-  - name: planArtifactUseCurrent
-    type: boolean
-    default: false
+  - name: planArtifactStageName
+    type: string
+    default: ""
 
 jobs:
   - job: applyPlannedTerraform
@@ -71,7 +71,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactCurrent"
         displayName: "Download Terraform Plan Artifact (Current Build)"
-        condition: and(succeeded(), eq('${{ parameters.planArtifactUseCurrent }}', 'true')) # Only download from current build for manual runs (Plan should run first)
+        condition: and(succeeded(), or(eq('${{ parameters.planArtifactStageName }}', ''), succeeded('${{ parameters.planArtifactStageName }}'))) # Only download from current build for manual runs (Plan should run first)
         inputs:
           buildType: "current"
           artifact: terraformPlan
@@ -80,7 +80,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactLatest"
         displayName: "Download Terraform Plan Artifact (Latest from Branch)"
-        condition: and(succeeded(), eq('${{ parameters.planArtifactUseCurrent }}', 'false')) # Fallback to latest from branch if plan not found in current build
+        condition: and(succeeded(), not(succeeded('${{ parameters.planArtifactStageName }}'))) # Fallback to latest from branch if plan not found in current build
         inputs:
           buildType: "specific"
           project: "$(System.TeamProjectId)"
