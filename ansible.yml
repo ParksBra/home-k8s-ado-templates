@@ -1,0 +1,115 @@
+parameters:
+  - name: pythonVenvPath
+    type: string
+    default: "$(System.DefaultWorkingDirectory)/.venv"
+
+  - name: pythonVenvCacheVersion
+    type: string
+    default: "1"
+
+  - name: pythonRequirementsFileRelativePath
+    type: string
+    default: "requirements.txt"
+
+  - name: ansibleRequirementsFileRelativePath
+    type: string
+    default: "requirements.yml"
+
+  - name: ansibleRepository
+    type: string
+    default: self
+
+  - name: ansibleRepositoryAnsiblePath
+    type: string
+    default: "ansible"
+
+  - name: ansibleConfigRelativePath
+    type: string
+    default: "ansible.cfg"
+
+  - name: ansibleSshConfigurations
+    type: object
+    default:
+      - group: "all"
+        user: "ansible"
+        keySecretFileName: ""
+        keyPassphrase: ""
+
+  - name: ansiblePlaybooks
+    type: object
+    default:
+      - "site.yml"
+
+  - name: ansibleDebug
+    type: boolean
+    default: false
+
+  - name: ansiblePlaybookExtraEnvironmentVariables
+    type: object
+    default:
+      - name: ""
+        value: ""
+
+  - name: ansibleApply
+    type: boolean
+    default: true
+
+  - name: ansibleLint
+    type: boolean
+    default: true
+
+  - name: preApplySteps
+    type: stepList
+    default: []
+
+  - name: postApplySteps
+    type: stepList
+    default: []
+
+stages:
+  - stage: verifyAndCheckAnsible
+    displayName: "Verify and Check / Dry Run Ansible Playbooks"
+    condition: >-
+      in(variables['Build.Reason'], 'Manual', 'PullRequest')
+    jobs:
+      - template: check-ansible.yml
+        parameters:
+          pythonVenvPath: ${{ parameters.pythonVenvPath }}
+          pythonVenvCacheVersion: ${{ parameters.pythonVenvCacheVersion }}
+          pythonRequirementsFileRelativePath: ${{ parameters.pythonRequirementsFileRelativePath }}
+          ansibleRequirementsFileRelativePath: ${{ parameters.ansibleRequirementsFileRelativePath }}
+          ansibleRepository: ${{ parameters.ansibleRepository }}
+          ansibleRepositoryAnsiblePath: ${{ parameters.ansibleRepositoryAnsiblePath }}
+          ansibleConfigRelativePath: ${{ parameters.ansibleConfigRelativePath }}
+          ansibleSshConfigurations: ${{ parameters.ansibleSshConfigurations }}
+          ansiblePlaybooks: ${{ parameters.ansiblePlaybooks }}
+          ansibleDebug: ${{ parameters.ansibleDebug }}
+          ansiblePlaybookExtraEnvironmentVariables: ${{ parameters.ansiblePlaybookExtraEnvironmentVariables }}
+          ansibleLint: ${{ parameters.ansibleLint }}
+
+  - stage: applyAnsible
+    displayName: "Apply Ansible Playbooks"
+    condition: >-
+      or(
+        in(variables['Build.Reason'], 'Manual', 'IndividualCI'),
+        and(
+          in(variables['Build.Reason'], 'Manual'),
+          eq('${{ parameters.ansibleApply }}', 'true')
+        )
+      )
+    jobs:
+      - template: apply-ansible.yml
+        parameters:
+          pythonVenvPath: ${{ parameters.pythonVenvPath }}
+          pythonVenvCacheVersion: ${{ parameters.pythonVenvCacheVersion }}
+          pythonRequirementsFileRelativePath: ${{ parameters.pythonRequirementsFileRelativePath }}
+          ansibleRequirementsFileRelativePath: ${{ parameters.ansibleRequirementsFileRelativePath }}
+          ansibleRepository: ${{ parameters.ansibleRepository }}
+          ansibleRepositoryAnsiblePath: ${{ parameters.ansibleRepositoryAnsiblePath }}
+          ansibleConfigRelativePath: ${{ parameters.ansibleConfigRelativePath }}
+          ansibleSshConfigurations: ${{ parameters.ansibleSshConfigurations }}
+          ansiblePlaybooks: ${{ parameters.ansiblePlaybooks }}
+          ansibleDebug: ${{ parameters.ansibleDebug }}
+          ansiblePlaybookExtraEnvironmentVariables: ${{ parameters.ansiblePlaybookExtraEnvironmentVariables }}
+          preApplySteps: ${{ parameters.preApplySteps }}
+          postApplySteps: ${{ parameters.postApplySteps }}

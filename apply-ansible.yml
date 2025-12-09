@@ -1,0 +1,101 @@
+parameters:
+  - name: pythonVenvPath
+    type: string
+    default: "$(System.DefaultWorkingDirectory)/.venv"
+
+  - name: pythonVenvCacheVersion
+    type: string
+    default: "1"
+
+  - name: pythonRequirementsFileRelativePath
+    type: string
+    default: "requirements.txt"
+
+  - name: ansibleRequirementsFileRelativePath
+    type: string
+    default: "requirements.yml"
+
+  - name: ansibleRepository
+    type: string
+    default: self
+
+  - name: ansibleRepositoryAnsiblePath
+    type: string
+    default: "ansible"
+
+  - name: ansibleConfigRelativePath
+    type: string
+    default: "ansible.cfg"
+
+  - name: ansibleSshConfigurations
+    type: object
+    default:
+      - group: "all"
+        user: "ansible"
+        keySecretFileName: ""
+        keyPassphrase: ""
+
+  - name: ansiblePlaybooks
+    type: object
+    default:
+      - "site.yml"
+
+  - name: ansibleDebug
+    type: boolean
+    default: false
+
+  - name: ansiblePlaybookExtraEnvironmentVariables
+    type: object
+    default:
+      - name: ""
+        value: ""
+
+  - name: preApplySteps
+    type: stepList
+    default: []
+
+  - name: postApplySteps
+    type: stepList
+    default: []
+
+jobs:
+  - job: runAnsiblePlaybooks
+    displayName: "Run Ansible Playbooks"
+    steps:
+      - template: _templates/prepare-ansible.yml
+        parameters:
+          pythonVenvPath: ${{ parameters.pythonVenvPath }}
+          pythonVenvCacheVersion: ${{ parameters.pythonVenvCacheVersion }}
+          pythonRequirementsFileRelativePath: ${{ parameters.pythonRequirementsFileRelativePath }}
+          ansibleRequirementsFileRelativePath: ${{ parameters.ansibleRequirementsFileRelativePath }}
+          ansibleRepository: ${{ parameters.ansibleRepository }}
+          ansibleRepositoryAnsiblePath: ${{ parameters.ansibleRepositoryAnsiblePath }}
+          ansibleSshConfigurations: ${{ parameters.ansibleSshConfigurations }}
+
+      - ${{ each step in parameters.preApplySteps }}:
+          - ${{ step }}
+
+      - ${{ each playbook in parameters.ansiblePlaybooks }}:
+        - task: Bash@3
+          name: "ansiblePlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
+          displayName: "Run Ansible Playbook: ${{ playbook }}"
+          condition: succeeded()
+          env:
+            ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
+            DEBUG: "${{ parameters.ansibleDebug }}"
+            ${{ each sshConfig in parameters.ansibleSshConfigurations }}:
+              ${{ upper(sshConfig.group) }}_SSH_KEY_PATH: $(${{ sshConfig.group }}Key.secureFilePath)
+              ${{ upper(sshConfig.group) }}_SSH_USER: ${{ sshConfig.user }}
+            ${{ each envVar in parameters.ansiblePlaybookExtraEnvironmentVariables }}:
+              ${{ envVar.name }}: ${{ envVar.value }}
+          inputs:
+            targetType: "inline"
+            script: |
+              echo "##[group]Run Ansible Playbook: ${{ playbook }}"
+                  cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
+                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
+              echo "##[endgroup]"
+            failOnStderr: true
+
+      - ${{ each step in parameters.postApplySteps }}:
+          - ${{ step }}

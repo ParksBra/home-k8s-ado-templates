@@ -1,0 +1,134 @@
+parameters:
+  - name: kubeconfigArtifactFileName
+    type: string
+    default: kubeconfig
+
+  - name: kubeconfigArtifactName
+    type: string
+    default: kubeConfig
+
+  - name: kubeconfigArtifactSourcePipeline
+    type: string
+    default: clusterBase
+
+  - name: terraformRepository
+    type: string
+    default: self
+
+  - name: terraformRepositoryTerraformPath
+    type: string
+    default: terraform
+
+  - name: terraformBackendNamespace
+    type: string
+    default: kube-system
+
+  - name: terraformBackendSuffix
+    type: string
+    default: terraform
+
+  - name: terraformVariables
+    type: object
+    default:
+      - name: ""
+        value: ""
+
+  - name: terraformExtraEnvironmentVariables
+    type: object
+    default:
+      - name: ""
+        value: ""
+
+  - name: terraformVersion
+    type: string
+    default: latest
+
+  - name: planArtifactUseCurrent
+    type: boolean
+    default: true
+
+jobs:
+  - job: applyPlannedTerraform
+    displayName: "Apply Planned Terraform"
+    steps:
+      - template: _templates/self_checkout.yml
+
+      - download: ${{ parameters.kubeconfigArtifactSourcePipeline }}
+        displayName: "Download Kubeconfig File Artifact"
+        artifact: ${{ parameters.kubeconfigArtifactName }}
+
+      - checkout: ${{ parameters.terraformRepository }}
+        displayName: "Sparse Checkout Terraform Repository"
+        path: "terraform"
+        sparseCheckoutDirectories: "${{ parameters.terraformRepositoryTerraformPath }}"
+
+      - task: TerraformInstaller@1
+        name: "installTerraform"
+        displayName: "Install Terraform"
+        inputs:
+          terraformVersion: "${{ parameters.terraformVersion }}"
+
+      - ${{ if eq(parameters.planArtifactUseCurrent, true) }}:
+        - task: DownloadPipelineArtifact@2
+          name: "downloadPlanArtifactCurrent"
+          displayName: "Download Terraform Plan Artifact (Current Build)"
+          condition: succeeded()
+          inputs:
+            buildType: "current"
+            artifact: terraformPlan
+            targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
+      - ${{ else }}:
+        - task: DownloadPipelineArtifact@2
+          name: "downloadPlanArtifactLatest"
+          displayName: "Download Terraform Plan Artifact (Latest from Branch)"
+          condition: and(succeeded(), eq('${{ parameters.planArtifactUseCurrent }}', 'false'))
+          inputs:
+            buildType: "specific"
+            project: "$(System.TeamProjectId)"
+            pipeline: "$(System.DefinitionId)"
+            buildVersionToDownload: "latestFromBranch"
+            branchName: "$(Build.SourceBranch)"
+            artifact: terraformPlan
+            targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
+
+      - task: Bash@3
+        name: "runTerraformShow"
+        displayName: "Display Terraform Plan"
+        env:
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Run Terraform Init for Display (No Backend)"
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
+                terraform init -no-color -upgrade -reconfigure -backend=false
+            echo "##[endgroup]"
+            terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+          failOnStderr: true
+
+      - task: Bash@3
+        name: "runTerraformApply"
+        displayName: "Terraform Apply"
+        env:
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+          KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}/${{ parameters.kubeconfigArtifactFileName }}"
+          ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
+            ${{ envVar.name }}: ${{ envVar.value }}
+          ${{ each variable in parameters.terraformVariables }}:
+            TF_VAR_${{ variable.name }}: ${{ variable.value }}
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Run Terraform Init"
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
+                terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
+            echo "##[endgroup]"
+            echo "##[group]Run Terraform Apply"
+                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
+            echo "##[endgroup]"
+          failOnStderr: true
