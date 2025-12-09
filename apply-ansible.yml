@@ -129,6 +129,7 @@ steps:
     - task: Bash@3
       name: "ansiblePlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
       displayName: "Run Ansible Playbook: ${{ playbook }}"
+      condition: succeeded()
       env:
         ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
         DEBUG: "${{ parameters.ansibleDebug }}"
