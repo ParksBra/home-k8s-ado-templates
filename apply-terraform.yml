@@ -105,6 +105,8 @@ steps:
       KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}/${{ parameters.kubeconfigArtifactFileName }}"
       ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
         ${{ envVar.name }}: ${{ envVar.value }}
+      ${{ each variable in parameters.terraformVariables }}:
+        TF_VAR_${{ variable.name }}: ${{ variable.value }}
     inputs:
       targetType: "inline"
       script: |
