@@ -43,9 +43,9 @@ parameters:
     type: string
     default: latest
 
-  - name: planArtifactUseCurrentBuild
-    type: boolean
-    default: false
+  - name: planStageName
+    type: string
+    default: "verifyAndPlanTerraform"
 
 jobs:
   - job: applyPlannedTerraform
@@ -69,18 +69,18 @@ jobs:
           terraformVersion: "${{ parameters.terraformVersion }}"
 
       - task: DownloadPipelineArtifact@2
-        name: "downloadPlanArtifact"
+        name: "downloadPlanArtifactCurrent"
         displayName: "Download Terraform Plan Artifact (Current Build)"
-        condition: eq(${{ parameters.planArtifactUseCurrentBuild }}, true)
+        condition: eq(succeeded(${{ parameters.planStageName }}), true)
         inputs:
           buildType: "current"
           artifact: terraformPlan
           targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
 
       - task: DownloadPipelineArtifact@2
-        name: "downloadPlanArtifact"
+        name: "downloadPlanArtifactLatest"
         displayName: "Download Terraform Plan Artifact (Latest from Branch)"
-        condition: eq(${{ parameters.planArtifactUseCurrentBuild }}, false)
+        condition: eq(succeeded(${{ parameters.planStageName }}), false) # Fallback to latest from branch if plan not found in current build
         inputs:
           buildType: "specific"
           project: "$(System.TeamProjectId)"
@@ -93,7 +93,6 @@ jobs:
       - task: Bash@3
         name: "runTerraformShow"
         displayName: "Display Terraform Plan"
-        condition: eq(variables.restoreCacheHit, 'true')
         env:
           TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
@@ -111,7 +110,6 @@ jobs:
       - task: Bash@3
         name: "runTerraformApply"
         displayName: "Terraform Apply"
-        condition: eq(variables.restoreCacheHit, 'true')
         env:
           TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           TF_IN_AUTOMATION: "1"
