@@ -91,4 +91,4 @@ stages:
           terraformVariables: ${{ parameters.terraformVariables }}
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
-          planArtifactUseCurrent: ${{ if succeeded('verifyAndPlanTerraform') }}true${{ else }}false
+          planArtifactUseCurrent: ${{ iff(succeeded('verifyAndPlanTerraform'), true, false) }}
