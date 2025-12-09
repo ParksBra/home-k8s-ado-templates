@@ -71,7 +71,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         name: "downloadPlanArtifactCurrent"
         displayName: "Download Terraform Plan Artifact (Current Build)"
-        condition: and(succeeded(), or(eq('${{ parameters.planArtifactStageName }}', ''), succeeded('${{ parameters.planArtifactStageName }}'))) # Only download from current build for manual runs (Plan should run first)
+        condition: and(succeeded(), or(eq('${{ parameters.planArtifactStageName }}', ''), succeeded('${{ parameters.planArtifactStageName }}'))) # Only download from current build for manual runs
         inputs:
           buildType: "current"
           artifact: terraformPlan
