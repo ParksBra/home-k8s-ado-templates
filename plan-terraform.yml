@@ -152,6 +152,6 @@ jobs:
         name: cachePlanArtifact
         displayName: "Cache Terraform Plan Artifact"
         inputs:
-          key: '"${{ parameters.cacheKeyPrefix }}" | "v${{ parameters.cacheVersion }}" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)" | $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan'
+          key: '"tfplan" | "$(Build.Repository.ID)" | "$(Build.SourceBranch)" | $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan'
           path: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
           cacheHitVar: "publishCacheHit"
