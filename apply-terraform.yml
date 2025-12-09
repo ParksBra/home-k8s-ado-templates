@@ -91,7 +91,7 @@ jobs:
           script: |
             echo "##[group]Run Terraform Init for Display (No Backend)"
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
-                terraform init -no-color -upgrade -reconfigure  -backend=false
+                terraform init -no-color -upgrade -reconfigure -backend=false
             echo "##[endgroup]"
             terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform/tfplan"
           failOnStderr: true
