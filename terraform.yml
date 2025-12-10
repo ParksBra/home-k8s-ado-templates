@@ -105,7 +105,12 @@ stages:
       - job: debug
         displayName: "Debug Terraform Apply Conditions"
         steps:
-        - task: Bash@3}{ format('"{0}"', join('", "', parameters.terraformApplyBuildReasons)) }}'
+        - task: Bash@3
+          displayName: "Debug - List Files in Terraform Plan Directory"
+          inputs:
+            targetType: 'inline'
+            script: |
+              echo '${{ format('"{0}"', join('", "', parameters.terraformApplyBuildReasons)) }}'
       - template: apply-terraform.yml
         parameters:
           kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
