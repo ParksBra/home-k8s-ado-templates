@@ -106,7 +106,10 @@ stages:
   - stage: applyAnsible
     displayName: "Apply Ansible Playbooks"
     condition: >-
-      in(variables['Build.Reason'], '${{ join(', ', parameters.ansibleApplyBuildReasons) }}')
+      and(
+        eq('${{ parameters.ansibleApply }}', true),
+        in(variables['Build.Reason'], '${{ join(', ', parameters.ansibleApplyBuildReasons) }}')
+      )
     jobs:
       - template: apply-ansible.yml
         parameters:
