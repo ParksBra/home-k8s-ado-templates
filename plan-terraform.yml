@@ -137,9 +137,8 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
-            echo "##[group]Run Terraform Plan for Destroy"
-                terraform plan -no-color -destroy -out=tfplan
-            echo "##[endgroup]"
+            echo "##[section]Run Terraform Destroy Plan"
+            terraform plan -no-color -destroy -out=tfplan
           failOnStderr: true
 
       - task: PublishPipelineArtifact@1
