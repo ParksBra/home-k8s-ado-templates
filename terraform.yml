@@ -87,7 +87,6 @@ stages:
         - ${{ dep }}
     condition: >-
       and(
-        succeeded(),
         in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
         or(
           in(variables['Build.Reason'], 'IndividualCI'),
