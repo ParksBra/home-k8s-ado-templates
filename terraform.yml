@@ -54,11 +54,10 @@ parameters:
   - name: terraformVersion
     type: string
     default: latest
-  
+
   - name: terraformApplyDependsOn
     type: object
-    default:
-      - ""
+    default: []
 
 stages:
   - stage: verifyAndPlanTerraform
