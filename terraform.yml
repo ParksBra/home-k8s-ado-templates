@@ -61,6 +61,7 @@ parameters:
 
 stages:
   - stage: verifyAndPlanTerraform
+    name: verifyAndPlanTerraform
     displayName: "Verify and Plan Terraform"
     dependsOn: []
     jobs:
@@ -80,6 +81,7 @@ stages:
           terraformVersion: ${{ parameters.terraformVersion }}
 
   - stage: applyTerraform
+    name: applyTerraform
     displayName: "Apply Planned Terraform"
     dependsOn:
       - verifyAndPlanTerraform
