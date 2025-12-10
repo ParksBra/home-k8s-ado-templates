@@ -87,9 +87,8 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend=false
             echo "##[endgroup]"
-            echo "##[group]Run Terraform Validate"
-                terraform validate -no-color
-            echo "##[endgroup]"
+            echo "##[section]Run Terraform Validate"
+            terraform validate -no-color
           failOnStderr: true
 
       - task: Bash@3
@@ -113,9 +112,8 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
-            echo "##[group]Run Terraform Plan"
-                terraform plan -no-color -out=tfplan
-            echo "##[endgroup]"
+            echo "##[section]Run Terraform Plan"
+            terraform plan -no-color -out=tfplan
           failOnStderr: true
 
       - task: Bash@3
