@@ -99,7 +99,7 @@ stages:
       and(
         eq('${{ parameters.terraformApply }}', 'true'),
         succeeded('verifyAndPlanTerraform'),
-        in(variables['Build.Reason'], ${{ format('"{0}"', join('", "', parameters.terraformApplyBuildReasons)) }})
+        in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.terraformApplyBuildReasons)) }})
       )
     jobs:
       - job: debug
