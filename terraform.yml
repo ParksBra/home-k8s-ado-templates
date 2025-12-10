@@ -84,7 +84,7 @@ stages:
     displayName: "Apply Planned Terraform"
     dependsOn:
       - verifyAndPlanTerraform
-      - ${{ each(parameters.terraformApplyDependsOn, dep) }}
+      - ${{ each dep in parameters.terraformApplyDependsOn }}
         - ${{ dep }}
     condition: >-
       and(
