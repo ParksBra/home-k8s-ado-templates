@@ -98,7 +98,7 @@ stages:
       and(
         in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
         or(
-          in(variables['Build.Reason'], '${{ join(", ", parameters.terraformApplyBuildReasons) }}'),
+          in(variables['Build.Reason'], '${{ join(', ', parameters.terraformApplyBuildReasons) }}'),
           and(
             in(variables['Build.Reason'], 'Manual'),
             eq('${{ parameters.terraformApply }}', 'true')
