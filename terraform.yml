@@ -98,10 +98,16 @@ stages:
     condition: >-
       and(
         eq('${{ parameters.terraformApply }}', 'true'),
-        in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
-        in(variables['Build.Reason'], '${{ join(', ', parameters.terraformApplyBuildReasons) }}')
+        succeeded(verifyAndPlanTerraform),
+        in(variables['Build.Reason'], ${{ format('\'{0}\'', join('\', \'', parameters.terraformApplyBuildReasons)) }})
       )
     jobs:
+      - task: Bash@3
+        displayName: "Debug - List Files in Terraform Plan Directory"
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo "${{ format('\'{0}\'', join('\', \'', parameters.terraformApplyBuildReasons)) }}"
       - template: apply-terraform.yml
         parameters:
           kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
