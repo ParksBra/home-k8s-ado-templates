@@ -74,8 +74,8 @@ stages:
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
 
-  - stage: applyTerraformCurrent
-    displayName: "Apply Current Planned Terraform (Current Build Plan)"
+  - stage: applyTerraform
+    displayName: "Apply Planned Terraform"
     dependsOn: verifyAndPlanTerraform
     condition: >-
       and(
