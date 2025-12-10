@@ -58,8 +58,6 @@ parameters:
 stages:
   - stage: verifyAndPlanTerraform
     displayName: "Verify and Plan Terraform"
-    condition: >-
-      in(variables['Build.Reason'], 'Manual', 'PullRequest')
     jobs:
       - template: plan-terraform.yml
         parameters:
@@ -104,32 +102,3 @@ stages:
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
           planArtifactUseCurrent: true
-
-  - stage: applyTerraformLatest
-    displayName: "Apply Latest Planned Terraform (Latest Build Plan)"
-    dependsOn: verifyAndPlanTerraform
-    condition: >-
-      and(
-        in(dependencies.verifyAndPlanTerraform.result, 'Skipped', 'None'),
-        or(
-          in(variables['Build.Reason'], 'IndividualCI'),
-          and(
-            in(variables['Build.Reason'], 'Manual'),
-            eq('${{ parameters.terraformApply }}', 'true')
-          )
-        )
-      )
-    jobs:
-      - template: apply-terraform.yml
-        parameters:
-          kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
-          kubeconfigArtifactName: ${{ parameters.kubeconfigArtifactName }}
-          kubeconfigArtifactSourcePipeline: ${{ parameters.kubeconfigArtifactSourcePipeline }}
-          terraformRepository: ${{ parameters.terraformRepository }}
-          terraformRepositoryTerraformPath: ${{ parameters.terraformRepositoryTerraformPath }}
-          terraformBackendNamespace: ${{ parameters.terraformBackendNamespace }}
-          terraformBackendSuffix: ${{ parameters.terraformBackendSuffix }}
-          terraformVariables: ${{ parameters.terraformVariables }}
-          terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
-          terraformVersion: ${{ parameters.terraformVersion }}
-          planArtifactUseCurrent: false
