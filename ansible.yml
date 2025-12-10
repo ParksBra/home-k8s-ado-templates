@@ -107,7 +107,7 @@ stages:
     displayName: "Apply Ansible Playbooks"
     condition: >-
       and(
-        eq('${{ parameters.ansibleApply }}', true),
+        eq('${{ parameters.ansibleApply }}', 'true'),
         in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.ansibleApplyBuildReasons)) }})
       )
     jobs:
