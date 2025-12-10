@@ -54,10 +54,16 @@ parameters:
   - name: terraformVersion
     type: string
     default: latest
+  
+  - name: terraformApplyDependsOn
+    type: object
+    default:
+      - ""
 
 stages:
   - stage: verifyAndPlanTerraform
     displayName: "Verify and Plan Terraform"
+    dependsOn: []
     jobs:
       - template: plan-terraform.yml
         parameters:
@@ -76,9 +82,13 @@ stages:
 
   - stage: applyTerraform
     displayName: "Apply Planned Terraform"
-    dependsOn: verifyAndPlanTerraform
+    dependsOn:
+      - verifyAndPlanTerraform
+      - ${{ each(parameters.terraformApplyDependsOn, dep) }}
+        - ${{ dep }}
     condition: >-
       and(
+        succeeded(),
         in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
         or(
           in(variables['Build.Reason'], 'IndividualCI'),
