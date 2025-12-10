@@ -86,7 +86,7 @@ stages:
   - stage: verifyAndCheckAnsible
     displayName: "Verify and Check / Dry Run Ansible Playbooks"
     condition: >-
-      in(variables['Build.Reason'], '${{ join(', ', parameters.ansibleCheckBuildReasons) }}')
+      in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.ansibleCheckBuildReasons)) }})
     jobs:
       - template: check-ansible.yml
         parameters:
@@ -108,7 +108,7 @@ stages:
     condition: >-
       and(
         eq('${{ parameters.ansibleApply }}', true),
-        in(variables['Build.Reason'], '${{ join(', ', parameters.ansibleApplyBuildReasons) }}')
+        in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.ansibleApplyBuildReasons)) }})
       )
     jobs:
       - template: apply-ansible.yml

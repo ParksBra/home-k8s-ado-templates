@@ -74,15 +74,6 @@ stages:
     displayName: "Verify and Plan Terraform"
     dependsOn: []
     jobs:
-      - job: debug
-        displayName: "Debug Terraform Apply Conditions"
-        steps:
-        - task: Bash@3
-          displayName: "Debug - List Files in Terraform Plan Directory"
-          inputs:
-            targetType: 'inline'
-            script: |
-              echo '${{ format('''{0}''', join(''', ''', parameters.terraformApplyBuildReasons)) }}'
       - template: plan-terraform.yml
         parameters:
           kubeconfigArtifactFileName: ${{ parameters.kubeconfigArtifactFileName }}
