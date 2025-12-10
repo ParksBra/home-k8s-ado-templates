@@ -148,3 +148,25 @@ jobs:
           targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
           artifact: terraformPlan
           publishLocation: "pipeline"
+
+      - task: Bash@3
+        name: "forceUnlockTerraformState"
+        displayName: "Force Unlock Terraform State if job is Cancelled"
+        condition: and(always(), not(succeededOrFailed()))
+        env:
+          TF_DATA_DIR: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/.terraform"
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+          KUBE_NAMESPACE: "${{ parameters.terraformBackendNamespace }}"
+          KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/${{ parameters.kubeconfigArtifactSourcePipeline }}/${{ parameters.kubeconfigArtifactName }}/${{ parameters.kubeconfigArtifactFileName }}"
+          ${{ each envVar in parameters.terraformExtraEnvironmentVariables }}:
+            ${{ envVar.name }}: ${{ envVar.value }}
+        inputs:
+          targetType: "inline"
+          script: |
+            echo "##[group]Run Terraform Init for Unlock (No Backend)"
+                cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
+                terraform init -no-color -upgrade -reconfigure -backend=false
+            echo "##[endgroup]"
+            echo "##[section]Force Unlock Terraform State"
+            terraform force-unlock -force
