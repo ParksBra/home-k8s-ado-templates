@@ -87,7 +87,7 @@ jobs:
             project: "$(System.TeamProjectId)"
             pipeline: "$(System.DefinitionId)"
             buildVersionToDownload: "latestFromBranch"
-            branchName: "$(Build.SourceBranch)"
+            branchName: "$(System.PullRequest.SourceBranch)"
             artifact: terraformPlan
             targetPath: "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}"
 
