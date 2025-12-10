@@ -58,6 +58,22 @@ parameters:
     type: boolean
     default: true
 
+  - name: ansibleApplyBuildReasons
+    type: object
+    default:
+      - Manual
+      - IndividualCI
+      - BatchedCI
+      - Schedule
+      - BuildCompletion
+      - ResourceTrigger
+
+  - name: ansibleCheckBuildReasons
+    type: object
+    default:
+      - Manual
+      - PullRequest
+
   - name: preApplySteps
     type: stepList
     default: []
@@ -70,7 +86,7 @@ stages:
   - stage: verifyAndCheckAnsible
     displayName: "Verify and Check / Dry Run Ansible Playbooks"
     condition: >-
-      in(variables['Build.Reason'], 'Manual', 'PullRequest')
+      in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.ansibleCheckBuildReasons)) }})
     jobs:
       - template: check-ansible.yml
         parameters:
@@ -90,12 +106,9 @@ stages:
   - stage: applyAnsible
     displayName: "Apply Ansible Playbooks"
     condition: >-
-      or(
-        in(variables['Build.Reason'], 'Manual', 'IndividualCI'),
-        and(
-          in(variables['Build.Reason'], 'Manual'),
-          eq('${{ parameters.ansibleApply }}', 'true')
-        )
+      and(
+        eq('${{ parameters.ansibleApply }}', true),
+        in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.ansibleApplyBuildReasons)) }})
       )
     jobs:
       - template: apply-ansible.yml

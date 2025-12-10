@@ -59,6 +59,16 @@ parameters:
     type: object
     default: []
 
+  - name: terraformApplyBuildReasons
+    type: object
+    default:
+      - Manual
+      - IndividualCI
+      - BatchedCI
+      - Schedule
+      - BuildCompletion
+      - ResourceTrigger
+
 stages:
   - stage: verifyAndPlanTerraform
     displayName: "Verify and Plan Terraform"
@@ -87,14 +97,9 @@ stages:
         - ${{ dep }}
     condition: >-
       and(
-        in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
-        or(
-          in(variables['Build.Reason'], 'IndividualCI'),
-          and(
-            in(variables['Build.Reason'], 'Manual'),
-            eq('${{ parameters.terraformApply }}', 'true')
-          )
-        )
+        eq('${{ parameters.terraformApply }}', 'true'),
+        succeeded('verifyAndPlanTerraform'),
+        in(variables['Build.Reason'], ${{ format('''{0}''', join(''', ''', parameters.terraformApplyBuildReasons)) }})
       )
     jobs:
       - template: apply-terraform.yml
