@@ -98,7 +98,7 @@ stages:
     condition: >-
       and(
         eq('${{ parameters.terraformApply }}', 'true'),
-        succeeded(verifyAndPlanTerraform),
+        succeeded('verifyAndPlanTerraform'),
         in(variables['Build.Reason'], ${{ format('"{0}"', join('", "', parameters.terraformApplyBuildReasons)) }})
       )
     jobs:
