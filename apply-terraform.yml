@@ -87,6 +87,7 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend=false
             echo "##[endgroup]"
+            echo "##[section]Display Terraform Plan"
             terraform show -no-color "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
           failOnStderr: true
 
@@ -110,7 +111,6 @@ jobs:
                 cd $(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}
                 terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=${{ parameters.terraformBackendSuffix }}'
             echo "##[endgroup]"
-            echo "##[group]Run Terraform Apply"
-                terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
-            echo "##[endgroup]"
+            echo "##[section]Run Terraform Apply"
+            terraform apply -no-color -auto-approve "$(Pipeline.Workspace)/terraform/${{ parameters.terraformRepositoryTerraformPath }}/tfplan"
           failOnStderr: true

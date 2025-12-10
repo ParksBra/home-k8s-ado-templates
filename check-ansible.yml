@@ -84,10 +84,9 @@ jobs:
           inputs:
             targetType: "inline"
             script: |
-              echo "##[group]Lint Ansible Playbook: ${{ playbook }}"
-                  cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
-                  ${{ parameters.pythonVenvPath }}/bin/ansible-lint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
-              echo "##[endgroup]"
+              cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
+              echo "##[section]Lint Ansible Playbook: ${{ playbook }}"
+              ${{ parameters.pythonVenvPath }}/bin/ansible-lint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
@@ -105,8 +104,7 @@ jobs:
           inputs:
             targetType: "inline"
             script: |
-              echo "##[group]Check Ansible Playbook: ${{ playbook }}"
-                  cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
-                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
-              echo "##[endgroup]"
+              cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
+              echo "##[section]Check Ansible Playbook: ${{ playbook }}"
+              ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
             failOnStderr: true

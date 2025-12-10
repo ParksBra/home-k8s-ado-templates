@@ -91,10 +91,9 @@ jobs:
           inputs:
             targetType: "inline"
             script: |
-              echo "##[group]Run Ansible Playbook: ${{ playbook }}"
-                  cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
-                  ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
-              echo "##[endgroup]"
+              cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
+              echo "##[section]Run Ansible Playbook: ${{ playbook }}"
+              ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
             failOnStderr: true
 
       - ${{ each step in parameters.postApplySteps }}:
