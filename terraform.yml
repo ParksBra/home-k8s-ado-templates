@@ -99,7 +99,7 @@ stages:
       and(
         eq('${{ parameters.terraformApply }}', 'true'),
         in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
-        in(variables['Build.Reason'], '${{ join(', ', parameters.terraformApplyBuildReasons) }}'
+        in(variables['Build.Reason'], '${{ join(', ', parameters.terraformApplyBuildReasons) }}')
       )
     jobs:
       - template: apply-terraform.yml
