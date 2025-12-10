@@ -101,4 +101,3 @@ stages:
           terraformVariables: ${{ parameters.terraformVariables }}
           terraformExtraEnvironmentVariables: ${{ parameters.terraformExtraEnvironmentVariables }}
           terraformVersion: ${{ parameters.terraformVersion }}
-          planArtifactUseCurrent: true

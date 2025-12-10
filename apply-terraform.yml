@@ -43,10 +43,6 @@ parameters:
     type: string
     default: latest
 
-  - name: planArtifactUseCurrent
-    type: boolean
-    default: true
-
 jobs:
   - job: applyPlannedTerraform
     displayName: "Apply Planned Terraform"
