@@ -58,6 +58,15 @@ parameters:
   - name: terraformApplyDependsOn
     type: object
     default: []
+  
+  - name: terraformApplyBuildReasons
+    type: object
+    default:
+      - IndividualCI
+      - BatchedCI
+      - Schedule
+      - BuildCompletion
+      - ResourceTrigger
 
 stages:
   - stage: verifyAndPlanTerraform
@@ -89,7 +98,7 @@ stages:
       and(
         in(dependencies.verifyAndPlanTerraform.result, 'Succeeded'),
         or(
-          in(variables['Build.Reason'], 'IndividualCI'),
+          in(variables['Build.Reason'], '${{ join(", ", parameters.terraformApplyBuildReasons) }}'),
           and(
             in(variables['Build.Reason'], 'Manual'),
             eq('${{ parameters.terraformApply }}', 'true')
