@@ -1,7 +1,7 @@
 parameters:
   - name: pythonVenvPath
     type: string
-    default: "$(System.DefaultWorkingDirectory)/.venv"
+    default: "$(Pipeline.Workspace)/.venv"
 
   - name: pythonVenvCacheVersion
     type: string
