@@ -47,7 +47,7 @@ steps:
       targetType: "inline"
       script: |
         echo "##[group]Setup Python Virtual Environment"
-            python3 -m venv ${{ parameters.pythonVenvPath }}
+            python3 -m venv --clear ${{ parameters.pythonVenvPath }}
             ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade pip
         echo "##[endgroup]"
       failOnStderr: true
