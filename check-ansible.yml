@@ -1,8 +1,4 @@
 parameters:
-  - name: pythonVenvPath
-    type: string
-    default: "$(System.DefaultWorkingDirectory)/.venv"
-
   - name: pythonVenvCacheVersion
     type: string
     default: "1"
@@ -60,7 +56,7 @@ jobs:
     steps:
       - template: _templates/prepare-ansible.yml
         parameters:
-          pythonVenvPath: ${{ parameters.pythonVenvPath }}
+          pythonVenvPath: $(System.DefaultWorkingDirectory)/.venv
           pythonVenvCacheVersion: ${{ parameters.pythonVenvCacheVersion }}
           pythonRequirementsFileRelativePath: ${{ parameters.pythonRequirementsFileRelativePath }}
           ansibleRequirementsFileRelativePath: ${{ parameters.ansibleRequirementsFileRelativePath }}
@@ -86,7 +82,7 @@ jobs:
             script: |
               cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
               echo "##[section]Lint Ansible Playbook: ${{ playbook }}"
-              ${{ parameters.pythonVenvPath }}/bin/ansible-lint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
+              $(System.DefaultWorkingDirectory)/.venv/bin/ansible-lint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
@@ -106,5 +102,5 @@ jobs:
             script: |
               cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
               echo "##[section]Check Ansible Playbook: ${{ playbook }}"
-              ${{ parameters.pythonVenvPath }}/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
+              $(System.DefaultWorkingDirectory)/.venv/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
             failOnStderr: true

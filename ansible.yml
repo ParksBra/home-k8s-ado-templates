@@ -1,8 +1,4 @@
 parameters:
-  - name: pythonVenvPath
-    type: string
-    default: "$(System.DefaultWorkingDirectory)/.venv"
-
   - name: pythonVenvCacheVersion
     type: string
     default: "1"
@@ -90,7 +86,6 @@ stages:
     jobs:
       - template: check-ansible.yml
         parameters:
-          pythonVenvPath: ${{ parameters.pythonVenvPath }}
           pythonVenvCacheVersion: ${{ parameters.pythonVenvCacheVersion }}
           pythonRequirementsFileRelativePath: ${{ parameters.pythonRequirementsFileRelativePath }}
           ansibleRequirementsFileRelativePath: ${{ parameters.ansibleRequirementsFileRelativePath }}
@@ -113,7 +108,6 @@ stages:
     jobs:
       - template: apply-ansible.yml
         parameters:
-          pythonVenvPath: ${{ parameters.pythonVenvPath }}
           pythonVenvCacheVersion: ${{ parameters.pythonVenvCacheVersion }}
           pythonRequirementsFileRelativePath: ${{ parameters.pythonRequirementsFileRelativePath }}
           ansibleRequirementsFileRelativePath: ${{ parameters.ansibleRequirementsFileRelativePath }}
