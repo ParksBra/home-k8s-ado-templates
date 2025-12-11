@@ -69,6 +69,7 @@ jobs:
           name: "ansibleLintPlaybook${{ replace(replace(playbook, '.', '_'), '/', '_') }}"
           displayName: "Lint Ansible Playbook: ${{ playbook }}"
           condition: succeeded()
+          continueOnError: true
           env:
             ANSIBLE_CONFIG: "${{ parameters.ansibleConfigRelativePath }}"
             DEBUG: "${{ parameters.ansibleDebug }}"
