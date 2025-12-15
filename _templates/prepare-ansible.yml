@@ -48,48 +48,48 @@ steps:
       script: |
         echo "##[group]Setup Python Virtual Environment"
             python3 -m venv --clear ${{ parameters.pythonVenvPath }}
-            ${{ parameters.pythonVenvPath }}/bin/python3 -m pip install --upgrade pip
+            ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade pip
         echo "##[endgroup]"
       failOnStderr: true
 
-  - task: Bash@3
-    name: "createVenvCacheKey"
-    displayName: "Create Cache Key for Venv"
-    inputs:
-      targetType: "inline"
-      script: |
-        if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}" ]; then
-            echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}"
-        else
-            echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | $(Agent.OS)"
-        fi
-      failOnStderr: true
+  # - task: Bash@3
+  #   name: "createVenvCacheKey"
+  #   displayName: "Create Cache Key for Venv"
+  #   inputs:
+  #     targetType: "inline"
+  #     script: |
+  #       if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}" ]; then
+  #           echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}"
+  #       else
+  #           echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | $(Agent.OS)"
+  #       fi
+  #     failOnStderr: true
 
-  - task: Cache@2
-    name: "cacheVenv"
-    displayName: "Cache Python venv"
-    inputs:
-      key: "$(venvCacheKey)"
-      path: ${{ parameters.pythonVenvPath }}
-      cacheHitVar: cacheRestored
+  # - task: Cache@2
+  #   name: "cacheVenv"
+  #   displayName: "Cache Python venv"
+  #   inputs:
+  #     key: "$(venvCacheKey)"
+  #     path: ${{ parameters.pythonVenvPath }}
+  #     cacheHitVar: cacheRestored
 
   - task: Bash@3
     name: "installDependencies"
     displayName: "Install Dependencies"
-    condition: ne(variables.cacheRestored, 'true')
+    # condition: ne(variables.cacheRestored, 'true')
     inputs:
       targetType: "inline"
       script: |
         echo "##[group]Install Ansible"
-            ${{ parameters.pythonVenvPath }}/bin/python3 -m pip install --upgrade ansible
+            ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade ansible
         echo "##[endgroup]"
         echo "##[group]Install Ansible-Lint"
-            ${{ parameters.pythonVenvPath }}/bin/python3 -m pip install --upgrade ansible-lint
+            ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade ansible-lint
         echo "##[endgroup]"
 
         if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}" ]; then
         echo "##[group]Install pip requirements"
-            ${{ parameters.pythonVenvPath }}/bin/python3 -m pip install --upgrade -r $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}
+            ${{ parameters.pythonVenvPath }}/bin/pip install --upgrade -r $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}
         echo "##[endgroup]"
         else
             echo "No pip requirements file found at $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}, skipping pip dependencies installation."
@@ -97,7 +97,7 @@ steps:
 
         if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.ansibleRepositoryAnsiblePath }}" ]; then
         echo "##[group]Install ansible-galaxy collections"
-            ${{ parameters.pythonVenvPath }}/bin/python3 -m ansible.galaxy collection install --force -r $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.ansibleRequirementsFileRelativePath }}
+            ${{ parameters.pythonVenvPath }}/bin/ansible-galaxy collection install --force -r $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.ansibleRequirementsFileRelativePath }}
         echo "##[endgroup]"
         else
             echo "No Ansible Galaxy requirements file found at $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.ansibleRequirementsFileRelativePath }}, skipping Ansible Galaxy collections installation."
