@@ -83,7 +83,7 @@ jobs:
             script: |
               cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
               echo "##[section]Lint Ansible Playbook: ${{ playbook }}"
-              $(Pipeline.Workspace)/.venv/bin/ansible-lint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
+              $(Pipeline.Workspace)/.venv/bin/python3 -m ansiblelint $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }}
 
       - ${{ each playbook in parameters.ansiblePlaybooks }}:
         - task: Bash@3
@@ -103,5 +103,5 @@ jobs:
             script: |
               cd $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}
               echo "##[section]Check Ansible Playbook: ${{ playbook }}"
-              $(Pipeline.Workspace)/.venv/bin/ansible-playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
+              $(Pipeline.Workspace)/.venv/bin/python3 -m ansible.playbook $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ playbook }} --check --diff
             failOnStderr: true
