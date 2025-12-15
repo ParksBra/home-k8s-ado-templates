@@ -52,31 +52,31 @@ steps:
         echo "##[endgroup]"
       failOnStderr: true
 
-  - task: Bash@3
-    name: "createVenvCacheKey"
-    displayName: "Create Cache Key for Venv"
-    inputs:
-      targetType: "inline"
-      script: |
-        if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}" ]; then
-            echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}"
-        else
-            echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | $(Agent.OS)"
-        fi
-      failOnStderr: true
+  # - task: Bash@3
+  #   name: "createVenvCacheKey"
+  #   displayName: "Create Cache Key for Venv"
+  #   inputs:
+  #     targetType: "inline"
+  #     script: |
+  #       if [ -f "$(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}" ]; then
+  #           echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | "$(Agent.OS)" | $(Pipeline.Workspace)/ansible/${{ parameters.ansibleRepositoryAnsiblePath }}/${{ parameters.pythonRequirementsFileRelativePath }}"
+  #       else
+  #           echo "##vso[task.setvariable variable=venvCacheKey;]venv | v${{ parameters.pythonVenvCacheVersion }} | $(Agent.OS)"
+  #       fi
+  #     failOnStderr: true
 
-  - task: Cache@2
-    name: "cacheVenv"
-    displayName: "Cache Python venv"
-    inputs:
-      key: "$(venvCacheKey)"
-      path: ${{ parameters.pythonVenvPath }}
-      cacheHitVar: cacheRestored
+  # - task: Cache@2
+  #   name: "cacheVenv"
+  #   displayName: "Cache Python venv"
+  #   inputs:
+  #     key: "$(venvCacheKey)"
+  #     path: ${{ parameters.pythonVenvPath }}
+  #     cacheHitVar: cacheRestored
 
   - task: Bash@3
     name: "installDependencies"
     displayName: "Install Dependencies"
-    condition: ne(variables.cacheRestored, 'true')
+    # condition: ne(variables.cacheRestored, 'true')
     inputs:
       targetType: "inline"
       script: |
